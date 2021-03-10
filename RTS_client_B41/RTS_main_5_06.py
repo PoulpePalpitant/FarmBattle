@@ -42,8 +42,8 @@ class Controleur():
         self.moduloappelserveur=5  
         
         # adresses du URL du serveur de jeu, adresse 127.0.0.1 est pour des tests avec un serveur local... utile pour tester
-        self.urlserveur = "http://dodo1bododo.pythonanywhere.com"
-        #self.urlserveur = "http://127.0.0.1:5000"
+        #self.urlserveur = "http://dodo1bododo.pythonanywhere.com"
+        self.urlserveur = "http://127.0.0.1:5000"
         
         # test la connexion au serveur et retourne son etat pour l'afficher dans le splash
         testdispo=self.testetatserveur()
