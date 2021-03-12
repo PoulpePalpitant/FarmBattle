@@ -288,23 +288,23 @@ class Vue():
     def connecterevent(self):
         # on attache (bind) desF événements soit aux objets eux même
         self.canevas.bind("<Button-1>",self.annuleraction)
-        self.canevas.bind("<Button-3>",self.construirebatiment)
+        self.canevas.bind("<Button-2>",self.construirebatiment)
         # faire une multiselection
         self.canevas.bind("<Shift-Button-1>",self.selectdebuter)
         self.canevas.bind("<Shift-B1-Motion>",self.selectafficher)
         self.canevas.bind("<Shift-ButtonRelease-1>",self.selectfinir)
         
-        self.canevas.bind("<Button-2>",self.indiquerposition)
+        self.canevas.bind("<Button-3>",self.indiquerposition)
         # soit aux dessins, en vertu de leur tag (propriétés des objets dessinés)
         # ALL va réagir à n'importe quel dessin
         # sinon on spécifie un tag particulier, exemple avec divers tag, attaché par divers événements
         self.canevas.tag_bind("batiment","<Button-1>",self.creerentite)
         self.canevas.tag_bind("perso","<Button-1>",self.ajoutselection)
-        self.canevas.tag_bind("arbre","<Button-1>",self.ramasserressource)
-        self.canevas.tag_bind("aureus","<Button-1>",self.ramasserressource)
-        self.canevas.tag_bind("roche","<Button-1>",self.ramasserressource)
-        self.canevas.tag_bind("baie","<Button-1>",self.ramasserressource)
-        self.canevas.tag_bind("daim","<Button-1>",self.chasserressource)
+        self.canevas.tag_bind("arbre","<Button-3>",self.ramasserressource)
+        self.canevas.tag_bind("aureus","<Button-3>",self.ramasserressource)
+        self.canevas.tag_bind("roche","<Button-3>",self.ramasserressource)
+        self.canevas.tag_bind("baie","<Button-3>",self.ramasserressource)
+        self.canevas.tag_bind("daim","<Button-3>",self.chasserressource)
     
     # cette méthode sert à changer le cadre (Frame) actif de la fenêtre, on n'a qu'à fournir le cadre requis
     def changercadre(self,nomcadre):
