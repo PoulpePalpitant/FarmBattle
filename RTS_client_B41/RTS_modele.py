@@ -318,14 +318,18 @@ class Perso():
             
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
-            dist=Helper.calcDistance(self.x,self.y,x,y)
-            if dist <=self.vitesse:
+            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.vitesse):    
                 self.cible=None
 
 
-    def attack(self):
+    def attack(self):        
         if self.cible:
-            Helper.inRange()
+            # Si le cooldown de l'attaque est terminé
+            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.atkRange):    # Range d'attack
+                self.startNewAttack()   # Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
+        return
+
+    def startNewAttack(self):
         return
                 
     def cibler(self,pos):

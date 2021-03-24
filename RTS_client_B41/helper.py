@@ -74,6 +74,9 @@ class Helper(object):
         return random.choice([1,-1])        #50% de chance d'être positif ou négatif
 
     @staticmethod
-    def withinReach(self, destination):
-          return H.calcDistance(self.crd.x, self.crd.y, destination.x, destination.y) < self.speed
+    def withinDistance(x1,y1, x2, y2, distance):
+          dx = (x2-x1)**2     
+          dy = (y2-y1)**2
+          distanceFromPoints = math.sqrt(dx+dy)
+          return distanceFromPoints <= distance
 
