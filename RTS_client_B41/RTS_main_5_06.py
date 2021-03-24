@@ -161,6 +161,7 @@ class Controleur():
         # on passe le modele a la vue puisqu'elle trouvera toutes le sinfos a dessiner
         self.vue.modele=self.modele
         # on met la vue a jour avec les infos de partie
+        
         #self.vue.initialiseravecmodele()
         # on change le cadre la fenetre pour passer dans l'interface de jeu
         self.vue.changercadre("jeu")
