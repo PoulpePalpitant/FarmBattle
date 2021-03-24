@@ -7,7 +7,10 @@ from RTS_divers import *
 import math
 
 
-ARMOR_TYPES  = {LIGHT : 1, HEAVY: 2, SUPRA_HARD: 3}
+class ARMOR_TYPES():
+    LIGHT = 'LIGHT'
+    HEAVY = 'HEAVY'
+    SUPRA_HARD = 'SUPRA_HARD'
 
 class Batiment():
     def __init__(self,parent,id,x,y):
@@ -24,6 +27,7 @@ class Batiment():
         # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
         self.health = 0
         self.defense = 2
+
         self.armorType = ARMOR_TYPES.HEAVY
         
 class Maison(Batiment):
