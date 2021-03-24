@@ -21,3 +21,59 @@ class Helper(object):
          return distance
     calcDistance = staticmethod(calcDistance)
 
+    def adaptToMaxIndex(number, max):   # Empêche de dépasser l'index maximum d'un array
+        if number >= max:
+            number = max -1            
+        return number
+
+    @staticmethod
+    def adaptToMinIndex(number):    # Empêche de dépasser un array vers les négatif
+        if number < 0:
+            number = 0            
+        return number
+    
+    @staticmethod
+    def adaptToArraySize(number,max):    # Fais les deux méthodes plus haut d'un seul coup
+        if number >= max:
+            number = max -1
+        else:
+            if number < 0:
+                number = 0
+        return number
+    
+    @staticmethod
+    def adaptToMaxValue(number, max):   # Empêche de dépasser le maximum
+        if number > max:
+            number = max            
+        return number
+    
+    @staticmethod
+    def adaptToMinValue(number, min):   # Empêche de dépasser le minimum
+        if number < min:
+            number = min            
+        return number
+    
+    @staticmethod
+    def adaptToInterval(number, min, max):   # Fais les deux méthodes plus haut d'un seul coup
+        if number > max:
+            number = max    
+        elif number < min:            
+            number = min            
+        return number
+    
+    @staticmethod
+    def roll50():
+        return random.choice([0, 1]) == 0   # 50% de chance
+    
+    @staticmethod
+    def roll50(choice1,choice2):
+        return random.choice([choice1, choice2])   # 50
+    
+    @staticmethod
+    def randSign():
+        return random.choice([1,-1])        #50% de chance d'être positif ou négatif
+
+    @staticmethod
+    def withinReach(self, destination):
+          return H.calcDistance(self.crd.x, self.crd.y, destination.x, destination.y) < self.speed
+

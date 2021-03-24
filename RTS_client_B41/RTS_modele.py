@@ -294,8 +294,6 @@ class Perso():
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
-
-
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
@@ -323,6 +321,12 @@ class Perso():
             dist=Helper.calcDistance(self.x,self.y,x,y)
             if dist <=self.vitesse:
                 self.cible=None
+
+
+    def attack(self):
+        if self.cible:
+            Helper.inRange()
+        return
                 
     def cibler(self,pos):
         self.cible=pos
@@ -341,6 +345,13 @@ class Soldat(Perso):
         self.defense = 0
         self.atkDmg = 6
         self.atkSpeed = 5
+
+    def jouerprochaincoup(self):
+        if self.actioncourante =="deplacer":
+            self.deplacer()
+
+        elif self.actioncourante == "attack":
+            self.attack()
 
 
 class Archer(Perso):
