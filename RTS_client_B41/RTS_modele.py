@@ -6,6 +6,9 @@ from helper import Helper
 from RTS_divers import *
 import math
 
+
+ARMOR_TYPES  = {LIGHT : 1, HEAVY: 2, SUPRA_HARD: 3}
+
 class Batiment():
     def __init__(self,parent,id,x,y):
         self.parent=parent
@@ -17,6 +20,11 @@ class Batiment():
         self.maxperso=0
         self.perso=0
         self.cartebatiment=[]
+
+        # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
+        self.health = 0
+        self.defense = 2
+        self.armorType = ARMOR_TYPES.HEAVY
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype):
@@ -26,6 +34,10 @@ class Maison(Batiment):
         self.maxperso=10
         self.perso=0
 
+        # Stats de defenses 
+        self.health = 300
+        self.defense = 2
+
 class Abri():
     def __init__(self,parent,id,couleur,x,y,montype):
         Batiment.__init__(self,parent,id,x,y)
@@ -34,6 +46,10 @@ class Abri():
         self.maxperso=20
         self.perso=0
         
+        # Stats de defenses 
+        self.health = 300
+        self.defense = 2
+        
 class Caserne():
     def __init__(self,parent,id,couleur,x,y,montype):
         Batiment.__init__(self,parent,id,x,y)
@@ -41,6 +57,10 @@ class Caserne():
         self.montype=montype
         self.maxperso=20
         self.perso=0
+
+        # Stats de defenses 
+        self.health = 500
+        self.defense = 2
         
 class Daim():
     def __init__(self,parent,id,x,y):
@@ -231,7 +251,7 @@ class Javelot():
     def bouger(self): 
         self.x,self.y,=Helper.getAngledPoint(self.ang,self.vitesse,self.x,self.y)
         dist=Helper.calcDistance(self.x,self.y,self.proie.x,self.proie.y)
-        if dist<=self.demitaille:
+        if dist<=self.demitaille:  # 1 shot kill
             # tue daim
             self.parent.actioncourante="ciblerressource"
             self.parent.javelots.remove(self)
@@ -257,10 +277,21 @@ class Perso():
         self.x=x
         self.y=y
         self.cible=[]
-        self.mana=100
         self.champvision=100
         self.vitesse=5
         self.angle=None
+
+        # Stats de combats, doivent être spécifié dans les sous-classes
+        self.health = 0
+        self.defense = 0
+        self.atkDmg = 0
+        self.atkRange = 3   # Default pour melee unit
+        self.atkSpeed = 0
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.mana=0
+
+
+
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
@@ -300,12 +331,39 @@ class Perso():
 class Soldat(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 100
+        self.defense = 0
+        self.atkDmg = 6
+        self.atkSpeed = 5
+
+
 class Archer(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 60
+        self.defense = 0
+        self.atkDmg = 8
+        self.atkRange = 30   
+        self.atkSpeed = 7
+
+
 class Chevalier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.HEAVY
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
+
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
@@ -324,6 +382,14 @@ class Ouvrier(Perso):
         self.champchasse=120
         self.javelots=[]
         self.vitesse=random.randrange(5)+5
+
+        # Combat stats
+        self.health = 50
+        self.defense = 0
+        self.atkDmg = 2
+        self.atkRange = 0   
+        self.atkSpeed = 5
+
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
