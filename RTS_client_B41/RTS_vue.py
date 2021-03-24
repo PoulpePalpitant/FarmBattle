@@ -24,6 +24,7 @@ class Vue():
         self.tailleminicarte=220
         # images des assets, definies dans le modue loadeurimages
         self.images=chargerimages()
+        self.gifs = loadGif()
         # objet pour cumuler les manipulations du joueur pour generer une action de jeu
         self.action=Action(self)
         # cadre principal de l'application
@@ -535,6 +536,13 @@ class Vue():
                 nomimg="daim"+i.dir
                 self.canevas.create_image(i.x,i.y,image=self.images[nomimg],tags=("",i.id,"artefact","daim","mobile"))
         
+        for j in self.modele.biotopes["eau"].keys():
+            i = self.modele.biotopes["eau"][j]
+            if i.sprite:
+                self.canevas.create_image(i.x,i.y,image = self.gifs[i.sprite][i.spriteNum], tags=("",i.id,"artefact","poissons","mobile"))
+                i.nextSprite()
+
+
         # mettre les chat a jour si de nouveaux messages sont arrives
         if self.textchat and self.modele.joueurs[self.parent.monnom].chatneuf:
             self.textchat.delete(0, END)
