@@ -107,7 +107,8 @@ class Daim():
             self.dir=self.dir+"B"
         else:
             self.dir=self.dir+"H"
-            
+
+
 class Biotope():
     def __init__(self,parent,id,monimg,x,y,montype):
         self.parent=parent
@@ -116,6 +117,8 @@ class Biotope():
         self.x=x
         self.y=y  
         self.montype=montype 
+        self.sprite = None
+        self.spriteNum = 0
 
 class Baie(Biotope):
     typeressource=['baiegrand',
@@ -144,9 +147,24 @@ class Eau(Biotope):
                    'eauquenouillesgrand',
                    'eautourbillon',
                    'eautroncs']
+
     def __init__(self,parent,id,monimg,x,y,montype):
         Biotope.__init__(self,parent,id,monimg,x,y,montype)
-        self.valeur=100 
+        n = random.randrange(100)
+        
+        if n == 10:
+            self.spriteLength = len(self.parent.parent.vue.gifs["poissons"])
+            self.sprite = "poissons"
+            self.spriteNum = random.randrange(self.spriteLength)
+            self.valeur=100 
+        else:
+            self.valeur = 10
+
+    def nextSprite(self):
+        if self.sprite:
+            self.spriteNum+=1
+            if self.spriteNum > self.spriteLength - 1:
+                self.spriteNum = 0
                        
 class Aureus(Biotope):
     typeressource=['aureusbrillant',
@@ -663,7 +681,7 @@ class Partie():
                           
     def creerregions(self):
         for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]
+            self.regions[reg[0]]=[]     # la clé de région
             for i in range(reg[1]):
                 listecasereg=[]
                 x=random.randrange(self.taillecarte)
@@ -695,7 +713,7 @@ class Partie():
                     if y>=self.taillecarte:
                         y=self.taillecarte-1
                         break
-                self.regions[reg[0]].append(listereg)
+                self.regions[reg[0]].append(listereg)   # Assignation de région pour chaque case
                 
         
     def creerpopulation(self,mondict,nbrIA):

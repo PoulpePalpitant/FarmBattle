@@ -42,8 +42,8 @@ class Controleur():
         self.moduloappelserveur=5  
         
         # adresses du URL du serveur de jeu, adresse 127.0.0.1 est pour des tests avec un serveur local... utile pour tester
-        self.urlserveur = "http://dodo1bododo.pythonanywhere.com"
-        #self.urlserveur = "http://127.0.0.1:5000"
+        #self.urlserveur = "http://dodo1bododo.pythonanywhere.com"
+        self.urlserveur = "http://127.0.0.1:5000"
         
         # test la connexion au serveur et retourne son etat pour l'afficher dans le splash
         testdispo=self.testetatserveur()
@@ -161,6 +161,7 @@ class Controleur():
         # on passe le modele a la vue puisqu'elle trouvera toutes le sinfos a dessiner
         self.vue.modele=self.modele
         # on met la vue a jour avec les infos de partie
+        
         #self.vue.initialiseravecmodele()
         # on change le cadre la fenetre pour passer dans l'interface de jeu
         self.vue.changercadre("jeu")
