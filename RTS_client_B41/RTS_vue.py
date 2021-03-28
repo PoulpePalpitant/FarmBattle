@@ -640,7 +640,7 @@ class Action():
         txt=self.parent.entreechat.get()
         joueur=self.parent.joueurs.get()
         if joueur:
-            action=[self.parent.nomDuJoueur,"chatter",[self.parent.monomDuJoueurnnom+": "+txt,self.parent.nomDuJoueur,joueur]]
+            action=[self.parent.nomDuJoueur,"chatter",[self.parent.nomDuJoueur+": "+txt,self.parent.nomDuJoueur,joueur]]
             self.parent.parent.actionsrequises=action
     
     def chatter(self):
