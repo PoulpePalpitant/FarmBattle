@@ -294,8 +294,6 @@ class Perso():
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
-
-
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
@@ -320,9 +318,41 @@ class Perso():
             
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
-            dist=Helper.calcDistance(self.x,self.y,x,y)
-            if dist <=self.vitesse:
+            if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
                 self.cible=None
+
+    ######################################### DOIT ÊTRE TESTÉ et implémenté
+    # Vérifie si la cible est valide pour une attaque. 
+    def setAttackTarget(self, cible):        
+        if cible.parent != self.parent: # Si ennemie
+            if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
+                self.cible = cible
+        
+    def attack(self):        
+        if self.cible and self.cible.health > 0:    # Cible pas dead
+            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.atkRange):    # Range d'attack
+                # Si le cooldown de l'attaque est terminé
+                    #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
+                    self.cible.health = self.dealDamage(self.cible)
+                    
+                    if self.cible.health <= 0: # Si la cible meurt ici, faut arrêter de la target
+                        self.cible = None
+                    
+                    # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+        
+    
+    def dealDamage(self, target):
+        # Check si ya boost de dmg selon le type d'armor et de dmg
+        # ex: if dmgtype = FEU and armor = BOIS
+        # bonusDmg = 0.15
+        # dmg = self.atkDmg + self.atkDmg * bonusDmg
+        dmg = self.atkDmg - target.armor
+
+        if dmg < 1: # Comme dans les autres jeux du genre, le dmg minimum est toujours 1
+            dmg = 1
+
+        return target.health - dmg
+    ######################################### DOIT ÊTRE TESTÉ
                 
     def cibler(self,pos):
         self.cible=pos
@@ -341,6 +371,13 @@ class Soldat(Perso):
         self.defense = 0
         self.atkDmg = 6
         self.atkSpeed = 5
+
+    def jouerprochaincoup(self):
+        if self.actioncourante =="deplacer":
+            self.deplacer()
+
+        elif self.actioncourante == "attack":
+            self.attack()
 
 
 class Archer(Perso):

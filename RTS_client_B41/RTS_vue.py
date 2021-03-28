@@ -7,11 +7,11 @@ from RTS_divers import *
 from chargeurdimages import *
 
 class Vue():
-    def __init__(self,parent,urlserveur,monnom,testdispo):
+    def __init__(self,parent,urlserveur,nomDuJoueur,testdispo):
         self.parent=parent
         self.root=Tk()
-        self.root.title("Je suis "+monnom)
-        self.monnom=monnom
+        self.root.title("Je suis "+nomDuJoueur)
+        self.nomDuJoueur=nomDuJoueur
         self.cadrechaton=0
         self.textchat=""
         self.infohud={}
@@ -33,21 +33,21 @@ class Vue():
         self.cadreactif=None
         # un dictionnaire pour conserver les divers cadres du jeu, creer plus bas
         self.cadres={}                  
-        self.creercadres(urlserveur,monnom,testdispo)
+        self.creercadres(urlserveur,nomDuJoueur,testdispo)
     
     # Appeler apres l'initialisation de la partie
     def initialiseravecmodele(self):
         # on reassigne le nom final localement pour eviter
         # de toujours le requerir du parent
-        self.monnom=self.parent.monnom
+        self.nomDuJoueur= self.parent.nomDuJoueur
         # on ajuste la taille du canevas de jeu
         self.canevas.config(scrollregion=(0,0,self.modele.aireX,self.modele.aireY))
         self.canevasaction.delete("nom")
-        self.canevasaction.create_text(100,30,text=self.monnom,font=("arial",18,"bold"),anchor=S,tags=("nom"))
+        self.canevasaction.create_text(100,30,text=self.nomDuJoueur,font=("arial",18,"bold"),anchor=S,tags=("nom"))
         
         # on cree les cadres affichant les items d'actions du joueur
         # cadre apparaissant si on selectionne un ouvrier
-        coul=self.modele.joueurs[self.parent.monnom].couleur
+        coul=self.modele.joueurs[self.parent.nomDuJoueur].couleur
         self.cadrejeuinfo.config(bg=coul[1])
         self.creeraide()
         self.creercadreouvrier(coul[0]+"_",["maison","caserne"])
@@ -58,9 +58,9 @@ class Vue():
         self.centrermaison()
     
     def centrermaison(self): 
-        cle=list(self.modele.joueurs[self.monnom].batiments["maison"].keys())[0]
-        x=self.modele.joueurs[self.monnom].batiments["maison"][cle].x
-        y=self.modele.joueurs[self.monnom].batiments["maison"][cle].y
+        cle=list(self.modele.joueurs[self.nomDuJoueur].batiments["maison"].keys())[0]
+        x=self.modele.joueurs[self.nomDuJoueur].batiments["maison"][cle].x
+        y=self.modele.joueurs[self.nomDuJoueur].batiments["maison"][cle].y
         
         x1=self.canevas.winfo_width()/2
         y1=self.canevas.winfo_height()/2
@@ -80,8 +80,8 @@ class Vue():
              
 ###### LES CADRES ############################################################################################        
     # Appel de la création des divers cadre   
-    def creercadres(self,urlserveur,monnom,testdispo):
-        self.cadres["splash"]=self.creercadresplash(urlserveur,monnom,testdispo)
+    def creercadres(self,urlserveur,nomDuJoueur,testdispo):
+        self.cadres["splash"]=self.creercadresplash(urlserveur,nomDuJoueur,testdispo)
         self.cadres["lobby"]=self.creercadrelobby()
         self.cadres["jeu"]=self.creercadrejeu()
     
@@ -238,7 +238,7 @@ class Vue():
         self.canevasaction.grid(row=0,column=0,sticky=N+S)
         self.scrollVaction.grid(row=0,column=1,sticky=N+S)
         # les widgets 
-        self.canevasaction.create_text(100,30,text=self.parent.monnom,font=("arial",18,"bold"),anchor=S,tags=("nom"))
+        self.canevasaction.create_text(100,30,text=self.parent.nomDuJoueur,font=("arial",18,"bold"),anchor=S,tags=("nom"))
         
         
         # minicarte
@@ -332,7 +332,7 @@ class Vue():
         
     def ajoutselection(self,evt):
         mestags=self.canevas.gettags(CURRENT)
-        if self.parent.monnom in mestags:
+        if self.parent.nomDuJoueur in mestags:
             if "perso" in mestags:
                 self.action.persochoisi.append(mestags[1])
                 self.action.affichercommandeperso()      
@@ -357,7 +357,7 @@ class Vue():
             self.debutselect=[]
             objchoisi=(list(self.canevas.find_enclosed(x1,y1,x2,y2)))
             for i in objchoisi:
-                if self.parent.monnom not in self.canevas.gettags(i):
+                if self.parent.nomDuJoueur not in self.canevas.gettags(i):
                     objchoisi.remove(i)
                 else:
                     self.action.persochoisi.append(self.canevas.gettags(i)[1])
@@ -423,13 +423,13 @@ class Vue():
     def creerentite(self,evt):
         x,y=evt.x,evt.y
         mestags=self.canevas.gettags(CURRENT)
-        if self.parent.monnom in mestags and "batiment" in mestags:
+        if self.parent.nomDuJoueur in mestags and "batiment" in mestags:
             if "maison" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
-                action=[self.parent.monnom,"creerperso",["ouvrier",mestags[4],mestags[1],pos]]
+                action=[self.parent.nomDuJoueur,"creerperso",["ouvrier",mestags[4],mestags[1],pos]]
             if "caserne" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
-                action=[self.parent.monnom,"creerperso",["soldat",mestags[4],mestags[1],pos]]
+                action=[self.parent.nomDuJoueur,"creerperso",["soldat",mestags[4],mestags[1],pos]]
             self.parent.actionsrequises=action
            
     ##FONCTIONS D'AFFICHAGES##################################        
@@ -480,7 +480,7 @@ class Vue():
     def afficherbatiment(self,joueur,batiment):
         coul=self.modele.joueurs[joueur].couleur[0]
         self.canevas.create_image(batiment.x,batiment.y,image=self.images[batiment.image],
-                                    tags=(self.parent.monnom,batiment.id,"artefact","batiment",batiment.montype))        
+                                    tags=(self.parent.nomDuJoueur,batiment.id,"artefact","batiment",batiment.montype))        
         couleurs={0:"",
                   1:"light green",
                   2:"light blue",
@@ -490,7 +490,7 @@ class Vue():
         coul=self.modele.joueurs[joueur].couleur[1]
         x1=int((batiment.x/self.modele.aireX)*self.tailleminicarte)
         y1=int((batiment.y/self.modele.aireY)*self.tailleminicarte)
-        self.minicarte.create_rectangle(x1-2,y1-2,x1+2,y1+2,fill=coul,tags=(self.parent.monnom,batiment.id,"artefact",batiment.montype))
+        self.minicarte.create_rectangle(x1-2,y1-2,x1+2,y1+2,fill=coul,tags=(self.parent.nomDuJoueur,batiment.id,"artefact",batiment.montype))
     
     def afficherjeu(self):
         # On efface tout ce qui est 'mobile' (un tag)
@@ -503,7 +503,7 @@ class Vue():
         # commencer par les choses des joueurs             
         for j in self.modele.joueurs.keys():
             # ajuster les infos du HUD 
-            if j==self.parent.monnom:
+            if j==self.parent.nomDuJoueur:
                 self.infohud["Nourriture"][0].set(self.modele.joueurs[j].ressources["nourriture"])
                 self.infohud["Bois"][0].set(self.modele.joueurs[j].ressources["arbre"])
                 self.infohud["Roche"][0].set(self.modele.joueurs[j].ressources["roche"])
@@ -544,12 +544,12 @@ class Vue():
 
 
         # mettre les chat a jour si de nouveaux messages sont arrives
-        if self.textchat and self.modele.joueurs[self.parent.monnom].chatneuf:
+        if self.textchat and self.modele.joueurs[self.parent.nomDuJoueur].chatneuf:
             self.textchat.delete(0, END)
-            self.textchat.insert(END, *self.modele.joueurs[self.parent.monnom].monchat)
-            if self.modele.joueurs[self.parent.monnom].chatneuf and self.action.chaton==0:
+            self.textchat.insert(END, *self.modele.joueurs[self.parent.nomDuJoueur].monchat)
+            if self.modele.joueurs[self.parent.nomDuJoueur].chatneuf and self.action.chaton==0:
                 self.btnchat.config(bg="orange")
-            self.modele.joueurs[self.parent.monnom].chatneuf=0
+            self.modele.joueurs[self.parent.nomDuJoueur].chatneuf=0
                 
     ###  METHODES POUR SPLASH ET LOBBY INSCRIPTION pour participer a une partie
     def updatesplash(self,etat):
@@ -608,25 +608,27 @@ class Action():
         self.chaton=0 
         self.aideon=0 
            
+
+    # C'est ici qu'on liste tout les actions possibles?
     def deplacer(self):
         if self.persochoisi:
-            action=[self.parent.parent.monnom,"deplacer",[self.position,self.persochoisi]]
+            action=[self.parent.parent.nomDuJoueur,"deplacer",[self.position,self.persochoisi]]
             self.parent.parent.actionsrequises=action
     
     def chasserressource(self,tag):
         if self.persochoisi:
-            action=[self.parent.parent.monnom,"chasserressource",[tag[3],tag[1],self.persochoisi]]
+            action=[self.parent.parent.nomDuJoueur,"chasserressource",[tag[3],tag[1],self.persochoisi]]
             self.parent.parent.actionsrequises=action
             
     def ramasserressource(self,tag):
         if self.persochoisi:
-            action=[self.parent.parent.monnom,"ramasserressource",[tag[3],tag[1],self.persochoisi]]
+            action=[self.parent.parent.nomDuJoueur,"ramasserressource",[tag[3],tag[1],self.persochoisi]]
             self.parent.parent.actionsrequises=action
             
     def construirebatiment(self,pos):
         self.btnactif.config(bg="SystemButtonFace")
         self.btnactif=None
-        action=[self.parent.monnom,"construirebatiment",[self.prochaineaction,pos]]
+        action=[self.parent.nomDuJoueur,"construirebatiment",[self.prochaineaction,pos]]
         self.parent.parent.actionsrequises=action            
                 
     def affichercommandeperso(self):
@@ -638,7 +640,7 @@ class Action():
         txt=self.parent.entreechat.get()
         joueur=self.parent.joueurs.get()
         if joueur:
-            action=[self.parent.monnom,"chatter",[self.parent.monnom+": "+txt,self.parent.monnom,joueur]]
+            action=[self.parent.nomDuJoueur,"chatter",[self.parent.monomDuJoueurnnom+": "+txt,self.parent.nomDuJoueur,joueur]]
             self.parent.parent.actionsrequises=action
     
     def chatter(self):

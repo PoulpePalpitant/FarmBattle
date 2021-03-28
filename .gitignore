@@ -136,3 +136,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 RTS_serveur_B41/baseRTS.db
+RTS_serveur_B41/baseRTS.db
