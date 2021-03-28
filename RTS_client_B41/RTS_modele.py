@@ -318,7 +318,7 @@ class Perso():
             
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
-            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.vitesse):    
+            if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
                 self.cible=None
 
     ######################################### DOIT ÊTRE TESTÉ et implémenté
