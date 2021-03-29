@@ -6,6 +6,15 @@ from helper import Helper
 from RTS_divers import *
 import math
 
+class DebugSettings(): # Va permettre de dbug bien des affaires
+    debugMode = True            
+    showAttackRange = True      # Indicateur du range d'attack des unités
+    
+    # Settings de lancement de partie
+    spawnPlayersNearby = True   # Spawn tout les joueurs très proche
+    createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
+    quickStart = True           # Reset create et launch une partie, immédiatement
+
 
 class ARMOR_TYPES():
     LIGHT = 'LIGHT'
@@ -281,6 +290,7 @@ class Perso():
         self.x=x
         self.y=y
         self.cible=[]
+        self.attackTarget=[]
         self.champvision=100
         self.vitesse=5
         self.angle=None
@@ -326,7 +336,8 @@ class Perso():
     def setAttackTarget(self, cible):        
         if cible.parent != self.parent: # Si ennemie
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
-                self.cible = cible
+                self.attackTarget = cible
+                
         
     def attack(self):        
         if self.cible and self.cible.health > 0:    # Cible pas dead
@@ -337,8 +348,9 @@ class Perso():
                     
                     if self.cible.health <= 0: # Si la cible meurt ici, faut arrêter de la target
                         self.cible = None
-                    
-                    # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+            else:
+                self.deplacer()
         
     
     def dealDamage(self, target):
@@ -624,7 +636,9 @@ class Joueur():
                       "ramasserressource":self.ramasserressource,
                       "chasserressource":self.chasserressource,
                       "construirebatiment":self.construirebatiment,
-                      "chatter":self.chatter}
+                      "chatter":self.chatter,
+                      "setAttackTarget":self.setAttackTarget,
+                      }
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
         
@@ -664,10 +678,29 @@ class Joueur():
                 if i in self.persos[j]:
                     self.persos[j][i].cibler(pos)
                     self.persos[j][i].actioncourante="deplacer"
-           
+
+    # Cible unité ennemie à attaquer
+    def setAttackTarget(self,param):
+        target,troupe=param
+        for i in troupe:
+            for j in self.persos.keys():
+                if i in self.persos[j]:
+                    self.persos[j][i].cibler([target.x,target.y])
+                    self.persos[j][i].setAttackTarget(target)
+                    self.persos[j][i].actioncourante="attack"
+
+
+    # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
         idmaison=getprochainid()
         self.batiments["maison"][idmaison]=Maison(self,idmaison,self.couleur,x,y,"maison")
+        self.creerperso(["ouvrier","maison",idmaison,[]])
+        
+        # Pour debug plus rapidement
+        # if DebugSettings.createAllUnitsAndBuildings
+        # idCaserne = getprochainid()
+        # self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
+        # self.creerperso(["soldat","caserne",idCaserne,[]])
     
     def construirebatiment(self,param):
         sorte,pos=param
@@ -831,6 +864,8 @@ class Partie():
                    [[int(self.aireX/2),int(self.aireY/2)],[self.aireX,self.aireY]]]
         nquad=4
         bord=50
+        playersToCreate = len(mondict)
+
         for i in mondict:
             id=getprochainid()
             coul=couleurs.pop()
@@ -839,14 +874,40 @@ class Partie():
             nquad-=1
             quad=quadrants.pop(choixquad)
             
+            locationOccupied = False
+            x = y = 0
+
             n=1
             while n:
-                x=random.randrange(quad[0][0]+bord,quad[1][0]-bord)
-                y=random.randrange(quad[0][1]+bord,quad[1][1]-bord)
+                # DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS  DEBUG SETTINGS DEBUG SETTINGS 
+                if DebugSettings.spawnPlayersNearby:
+                    if locationOccupied:    
+                        x += 1  # On pousse vers la droite pour trouver une case non occupés
+                    else:
+                        if playersToCreate == 1: 
+                            x = 1000 
+                            y = 1000
+                        elif playersToCreate == 2:
+                            x = 1500 
+                            y = 1000
+                        elif playersToCreate == 3:
+                            x = 1000 
+                            y = 1300
+                        elif playersToCreate == 4:
+                            x = 1500 
+                            y = 1300
+                else:
+                    # Génère les coordonnées de spawn aléatoire, mais dans un quadrant
+                    x=random.randrange(quad[0][0]+bord,quad[1][0]-bord)
+                    y=random.randrange(quad[0][1]+bord,quad[1][1]-bord)
+
                 case=self.trouvercase(x,y)
-                if self.cartecase[case[1]][case[0]]==0:
+                if self.cartecase[case[1]][case[0]]==0: # Check si la case est occupé par quek chose?
                     self.joueurs[i]=Joueur(self,id,i,coul,x,y)
                     n=0
+                    playersToCreate-=1
+                else:
+                    locationOccupied = True
             
     # Cette methode est une amorce non-fonctionnel a l'IA       
     #def creerIA(self):    
