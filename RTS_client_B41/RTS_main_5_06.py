@@ -33,6 +33,7 @@ class Controleur():
         self.modele=None
         # liste des noms de joueurs pour le lobby
         self.joueurs=[]
+        
         # requis pour sortir de cette boucle et passer au lobby du jeu
         self.prochainsplash=None    
                 
