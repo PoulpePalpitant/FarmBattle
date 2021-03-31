@@ -8,7 +8,10 @@ class IA(Joueur):
         self.actions={"creerouvrier":self.creerouvrier,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
                       "colorierouvrier":self.colorierouvrier,
-                      "ciblerbalise":self.ciblerbalise}
+                      "ciblerbalise":self.ciblerbalise
+                      }
+
+                    #   dkdjksjksjkjs
         
     def colorierouvrier(self):
         if self.ouvriers.keys():
