@@ -119,7 +119,20 @@ def chargerimages():
             'V_ouvrierD':PhotoImage(file='./images/vert/V_ouvrierD.png'),
             'V_ouvrierG':PhotoImage(file='./images/vert/V_ouvrierG.png'),
             'V_soldatD':PhotoImage(file='./images/vert/V_soldatD.png'),
-            'V_soldatG':PhotoImage(file='./images/vert/V_soldatG.png')}
+            'V_soldatG':PhotoImage(file='./images/vert/V_soldatG.png'),
+            'V_chicken':PhotoImage(file='./images/vert/V_chickenD.png'),
+            'V_chicken':PhotoImage(file='./images/vert/V_chickenG.png'),
+            'J_chicken':PhotoImage(file='./images/jaune/J_chickenD.png'),
+            'J_chicken':PhotoImage(file='./images/jaune/J_chickenG.png'),
+            'B_chicken':PhotoImage(file='./images/bleu/B_chickenD.png'),
+            'B_chicken':PhotoImage(file='./images/bleu/B_chickenG.png'),
+            'R_chicken':PhotoImage(file='./images/rouge/R_chickenD.png'),
+            'R_chicken':PhotoImage(file='./images/rouge/R_chickenG.png'),
+            'V_chickenCoop':PhotoImage(file='./images/vert/V_chickenCoop.png'),
+            'J_chickenCoop':PhotoImage(file='./images/jaune/J_chickenCoop.png'),
+            'B_chickenCoop':PhotoImage(file='./images/bleu/B_chickenCoop.png'),
+            'R_chickenCoop':PhotoImage(file='./images/rouge/R_chickenCoop.png')
+            }
     return images
 
 
