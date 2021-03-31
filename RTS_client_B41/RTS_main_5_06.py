@@ -205,6 +205,7 @@ class Controleur():
             else:
                 actions=None
             self.actionsrequises=[]
+            
             url = self.urlserveur+"/bouclersurjeu"
             params = {"nom": self.nomDuJoueur,
                       "cadrejeu":self.cadrejeu,

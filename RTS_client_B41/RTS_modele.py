@@ -352,10 +352,6 @@ class Perso():
 
         
     def jouerprochaincoup(self):
-        if self.attackTimer.isRunning():
-            if self.attackTimer.tick():
-                self.canAttack = True
-
         if self.actioncourante=="deplacer":
             self.deplacer()
             
@@ -387,18 +383,24 @@ class Perso():
         if cible.parent != self.parent: # Si ennemie
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
+                return True
+        return False
                 
         
     def attack(self):        
         if self.cible and self.cible.health > 0:    # Cible pas dead
             if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.atkRange):    # Range d'attack
-                # Si le cooldown de l'attaque est terminé
-                    #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
-                    self.cible.health = self.dealDamage(self.cible)
+                self.canAttack = True  # Si le cooldown de l'attaque est terminé
+                self.cible.health = self.dealDamage(self.cible)
+                #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
                     
-                    if self.cible.health <= 0: # Si la cible meurt ici, faut arrêter de la target
+                if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
+                    if self.cible == self.attackTarget:
                         self.cible = None
-                # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+
+                    self.attackTarget = None
+
+                self.attackTimer.start()  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
             else:
                 self.deplacer()
         
@@ -435,6 +437,10 @@ class Soldat(Perso):
         self.atkSpeed = 5
 
     def jouerprochaincoup(self):
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
         if self.actioncourante =="deplacer":
             self.deplacer()
 
@@ -732,14 +738,30 @@ class Joueur():
 
     # Cible unité ennemie à attaquer
     def setAttackTarget(self,param):
-        target,troupe=param
-        for i in troupe:
-            for j in self.persos.keys():
-                if i in self.persos[j]:
-                    self.persos[j][i].cibler([target.x,target.y])
-                    self.persos[j][i].setAttackTarget(target)
-                    self.persos[j][i].actioncourante="attack"
+        targetId, targetType, enemyPlayerName, units = param
+        target = None # Doit trouvé la cible selon l'id fournie
 
+        # Doit chercher la target dans la liste des persos    
+        for t in self.parent.parent.joueurs[enemyPlayerName].persos:
+            if t == targetType:
+                target = self.parent.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+                break
+
+        # Doit chercher la target dans la liste des bâtiments
+        if target != None:
+            for t in self.parent.parent.joueurs[enemyPlayerName].batiments:
+                if t == targetType:
+                    target = self.parent.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
+                    break
+
+        # OPTIMISATION : Placer batiments et persos dans la même liste de "child" de l'objet joueur
+
+        for u in units:
+            for j in self.persos.keys():
+                if u in self.persos[j]:
+                    self.persos[j][u].cibler([target.x,target.y])
+                    if self.persos[j][u].setAttackTarget(target):
+                        self.persos[j][u].actioncourante="attack"
 
     # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
@@ -1118,6 +1140,8 @@ class Partie():
         self.biotopes[type].pop(ress.id)
         self.ressourcemorte.append(ress)
         
+
+    # C'est ici qu'on reçoit une action.
     #############################################################################    
     # ATTENTION : NE PAS TOUCHER                 
     def ajouteractionsafaire(self,actionsrecues):
