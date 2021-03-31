@@ -41,6 +41,14 @@ class Caserne():
         self.montype=montype
         self.maxperso=20
         self.perso=0
+
+class ChickenCoop():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
         
 class Daim():
     def __init__(self,parent,id,x,y):
@@ -309,6 +317,9 @@ class Chevalier(Perso):
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+class Chicken(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -485,7 +496,8 @@ class Joueur():
                    "soldat":Soldat,
                    "archer":Archer,
                    "chevalier":Chevalier,
-                   "druide":Druide}
+                   "druide":Druide,
+                   "chicken":Chicken}
     def __init__(self,parent,id,nom,couleur, x,y):
         self.parent=parent
         self.nom=nom
@@ -505,11 +517,13 @@ class Joueur():
                     "soldat":{},
                     "archer":{},
                     "chevalier":{},
-                    "druide":{}}
+                    "druide":{},
+                    "chicken":{}}
         
         self.batiments={"maison":{},
                        "abri":{},
-                       "caserne":{}}
+                       "caserne":{},
+                       "chickenCoop":{}}
         
         self.actions={"creerperso":self.creerperso,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
@@ -615,12 +629,14 @@ class Partie():
         self.joueurs={}
         self.classesbatiments={"maison":Maison,
                         "caserne":Caserne,
-                        "abri":Abri}
+                        "abri":Abri,
+                        "chickenCoop":ChickenCoop}
         self.classespersos={"ouvrier":Ouvrier,
                     "soldat":Soldat,
                     "archer":Archer,
                     "chevalier":Chevalier,
-                    "druide":Druide}
+                    "druide":Druide,
+                    "chicken":Chicken}
         self.ressourcemorte=[]
         self.listebiotopes=[]
         #self.

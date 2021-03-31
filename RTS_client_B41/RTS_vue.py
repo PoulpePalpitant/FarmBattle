@@ -50,7 +50,7 @@ class Vue():
         coul=self.modele.joueurs[self.parent.monnom].couleur
         self.cadrejeuinfo.config(bg=coul[1])
         self.creeraide()
-        self.creercadreouvrier(coul[0]+"_",["maison","caserne"])
+        self.creercadreouvrier(coul[0]+"_",["maison","caserne","chickenCoop"])
         self.creerchatter()
         # on affiche les maisons, point de depart des divers joueurs
         self.afficherdepart()
@@ -430,6 +430,10 @@ class Vue():
             if "caserne" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
                 action=[self.parent.monnom,"creerperso",["soldat",mestags[4],mestags[1],pos]]
+            if "chickenCoop" in mestags:
+                pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
+                action=[self.parent.monnom,"creerperso",["chicken",mestags[4],mestags[1],pos]]
+                
             self.parent.actionsrequises=action
            
     ##FONCTIONS D'AFFICHAGES##################################        
