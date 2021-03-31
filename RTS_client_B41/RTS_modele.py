@@ -827,7 +827,7 @@ class Partie():
             players = []
             for i in self.joueurs:
                 players.append(i)
-            self.regions[reg[0]]=[]     # la clé de région
+            self.regions[reg[0]]=[]     # la clï¿½ de rï¿½gion
             for i in range(reg[1]):
                 listecasereg=[]
                 if players.__len__() and (k==1 or k == 4):
@@ -872,7 +872,7 @@ class Partie():
     
     def creerregions1(self):
         for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]     # la clé de région
+            self.regions[reg[0]]=[]     # la clï¿½ de rï¿½gion
             for i in range(reg[1]):
                 listecasereg=[]
                 x=random.randrange(self.taillecarte)
