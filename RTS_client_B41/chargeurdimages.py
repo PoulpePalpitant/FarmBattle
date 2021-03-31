@@ -1,14 +1,13 @@
 # changer pour changeurdimages
 
 from tkinter import PhotoImage
-    # toutes les images devraient être insérées ici    
+    # toutes les images devraient ï¿½tre insï¿½rï¿½es ici    
 def chargerimages():
     images={
             'javelotGH':PhotoImage(file='./images/divers/javelotGH.png'),
             'javelotGB':PhotoImage(file='./images/divers/javelotGB.png'),
             'javelotDH':PhotoImage(file='./images/divers/javelotDH.png'),
             'javelotDB':PhotoImage(file='./images/divers/javelotDB.png'),
-            'cerfD':PhotoImage(file='./images/animal/cerfD.png'),
             'cerfD':PhotoImage(file='./images/animal/cerfD.png'),
             'cerfG':PhotoImage(file='./images/animal/cerfG.png'),
             'cheval':PhotoImage(file='./images/animal/cheval.png'),
@@ -122,3 +121,30 @@ def chargerimages():
             'V_soldatD':PhotoImage(file='./images/vert/V_soldatD.png'),
             'V_soldatG':PhotoImage(file='./images/vert/V_soldatG.png')}
     return images
+
+
+
+def loadGif():
+    gifs = {}
+    sprites = ["poissons.gif"]
+    path = './images/GIFS/'
+
+    for name in sprites:
+        spriteImages = []
+        truthTest = True
+        noindex = 0
+
+        while truthTest:
+            try:
+                img = PhotoImage(file = path + name, format="gif -index " + str(noindex)) # ne rÃ©ussit jamais Ã  passer somehow
+                spriteImages.append(img)
+                noindex+=1
+
+            except Exception:
+                truthTest = False
+                gifs[name[:-4]] = spriteImages
+
+    return gifs 
+
+if __name__ == '__main__':
+    print( loadGif())
