@@ -429,12 +429,11 @@ class Vue():
                 action=[self.parent.nomDuJoueur,"creerperso",["ouvrier",mestags[4],mestags[1],pos]]
             if "caserne" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
-                action=[self.parent.monnom,"creerperso",["soldat",mestags[4],mestags[1],pos]]
+                action=[self.parent.nomDuJoueur,"creerperso",["soldat",mestags[4],mestags[1],pos]]
             if "chickenCoop" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
-                action=[self.parent.monnom,"creerperso",["chicken",mestags[4],mestags[1],pos]]
+                action=[self.parent.nomDuJoueur,"creerperso",["chicken",mestags[4],mestags[1],pos]]
                 
-                action=[self.parent.nomDuJoueur,"creerperso",["soldat",mestags[4],mestags[1],pos]]
             self.parent.actionsrequises=action
            
     ##FONCTIONS D'AFFICHAGES##################################        

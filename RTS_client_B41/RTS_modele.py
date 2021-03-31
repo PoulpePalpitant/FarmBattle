@@ -427,9 +427,17 @@ class Chevalier(Perso):
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
 class Chicken(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
