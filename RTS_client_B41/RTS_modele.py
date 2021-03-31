@@ -15,11 +15,50 @@ class DebugSettings(): # Va permettre de dbug bien des affaires
     createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
     quickStart = True           # Reset create et launch une partie, immédiatement
 
-
 class ARMOR_TYPES():
     LIGHT = 'LIGHT'
     HEAVY = 'HEAVY'
     SUPRA_HARD = 'SUPRA_HARD'
+
+class SimpleTimer():
+    def __init__(self, parent, interval):
+        self.parent = parent
+        self.interval = interval
+        self.counter = 0
+        self.running = True
+    
+    def set(self, interval):
+        if interval <= 0:  # Pas de counter négatif
+            return False
+        else :
+            self.counter = 0
+            self.interval = interval
+            self.running = True
+            return True
+
+    def isRunning(self): 
+        return self.running 
+
+    def tick(self):
+        self.counter += 1 
+        print("Tick: ", self.counter)
+
+        if self.counter >= self.interval: 
+            print("Timer est finit: ", self.counter)
+            self.running = False
+            return True # Counter finis
+        else:
+            return False
+
+    def start(self):  
+        print("Timer commence, durée : ", self.interval)
+        self.counter = 0
+        self.running = True
+
+    def stop(self): 
+        self.counter = self.interval = 0
+
+
 
 class Batiment():
     def __init__(self,parent,id,x,y):
@@ -301,6 +340,7 @@ class Perso():
         self.atkDmg = 0
         self.atkRange = 3   # Default pour melee unit
         self.atkSpeed = 0
+        self.attackTimer = SimpleTimer(self, self.atkSpeed)
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
@@ -442,9 +482,13 @@ class Ouvrier(Perso):
         self.atkDmg = 2
         self.atkRange = 0   
         self.atkSpeed = 5
+        self.attackTimer.set(5)
 
         
     def jouerprochaincoup(self):
+        if self.attackTimer.tick():
+            self.attackTimer.start()
+
         if self.actioncourante=="deplacer":
             self.deplacer()
         elif self.actioncourante=="ciblerressource":
