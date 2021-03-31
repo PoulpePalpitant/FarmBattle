@@ -71,6 +71,24 @@ class Caserne():
         self.maxperso=20
         self.perso=0
 
+class ChickenCoop():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
+        # Stats de defenses 
+        self.health = 500
+        self.defense = 2
+
+class PigPen():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
         # Stats de defenses 
         self.health = 500
         self.defense = 2
@@ -420,6 +438,29 @@ class Chevalier(Perso):
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+
+class Chicken(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
+class Pig(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 400
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.HEAVY
+        self.atkDmg = 30
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -604,7 +645,9 @@ class Joueur():
                    "soldat":Soldat,
                    "archer":Archer,
                    "chevalier":Chevalier,
-                   "druide":Druide}
+                   "druide":Druide,
+                   "chicken":Chicken,
+                   "pig":Pig}
     def __init__(self,parent,id,nom,couleur, x,y):
         self.parent=parent
         self.nom=nom
@@ -624,11 +667,15 @@ class Joueur():
                     "soldat":{},
                     "archer":{},
                     "chevalier":{},
-                    "druide":{}}
+                    "druide":{},
+                    "chicken":{},
+                    "pig":{}}
         
         self.batiments={"maison":{},
                        "abri":{},
-                       "caserne":{}}
+                       "caserne":{},
+                       "chickenCoop":{},
+                       "pigPen":{}}
         
         self.actions={"creerperso":self.creerperso,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
@@ -755,12 +802,16 @@ class Partie():
         self.joueurs={}
         self.classesbatiments={"maison":Maison,
                         "caserne":Caserne,
-                        "abri":Abri}
+                        "abri":Abri,
+                        "chickenCoop":ChickenCoop,
+                        "pigPen":PigPen}
         self.classespersos={"ouvrier":Ouvrier,
                     "soldat":Soldat,
                     "archer":Archer,
                     "chevalier":Chevalier,
-                    "druide":Druide}
+                    "druide":Druide,
+                    "chicken":Chicken,
+                    "pig":Pig}
         self.ressourcemorte=[]
         self.listebiotopes=[]
         #self.
