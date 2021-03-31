@@ -26,7 +26,12 @@ class SimpleTimer():
         self.interval = interval
         self.counter = 0
         self.running = True
-    
+    # Une alternative serait de juste setté un point future, et de checker si on est rendu
+    # AddDelay(time + duration)
+    # tick -> if time >= pointfuture: 
+    #             timer est finit
+
+
     def set(self, interval):
         if interval <= 0:  # Pas de counter négatif
             return False
@@ -341,11 +346,16 @@ class Perso():
         self.atkRange = 3   # Default pour melee unit
         self.atkSpeed = 0
         self.attackTimer = SimpleTimer(self, self.atkSpeed)
+        self.canAttack = True
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
         
     def jouerprochaincoup(self):
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
         if self.actioncourante=="deplacer":
             self.deplacer()
             
@@ -486,9 +496,6 @@ class Ouvrier(Perso):
 
         
     def jouerprochaincoup(self):
-        if self.attackTimer.tick():
-            self.attackTimer.start()
-
         if self.actioncourante=="deplacer":
             self.deplacer()
         elif self.actioncourante=="ciblerressource":
