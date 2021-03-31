@@ -638,9 +638,10 @@ class Partie():
                            3:["marais",3,8,8,"DarkSeaGreen3"],
                            4:["roche",16,6,3,"gray60"],
                            5:["aureus",12,4,3,"gold2"],}
+        self.creerpopulation(mondict,nbrIA)
         self.creerregions()
         self.creerbiotopes()
-        self.creerpopulation(mondict,nbrIA)
+        #self.creerpopulation(mondict,nbrIA)
     
     def creerbiotopes(self):
         # creer des daims Ã©parpillÃ©s
@@ -678,10 +679,60 @@ class Partie():
                 self.biotopes[ressource][id]=(objet)
                 self.listebiotopes.append(objet)
                 nressource-=1
+        
+        
                           
     def creerregions(self):
         for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]     # la clÃ© de rÃ©gion
+            players = []
+            for i in self.joueurs:
+                players.append(i)
+            self.regions[reg[0]]=[]     # la clé de région
+            for i in range(reg[1]):
+                listecasereg=[]
+                if players.__len__() and (k==1 or k == 4):
+                    playerX = math.floor(self.joueurs.get(players[0]).x/self.taillecase)
+                    playerY = math.floor(self.joueurs.get(players[0]).y/self.taillecase)
+                    x=random.randrange(playerX-20, playerX+20)
+                    y=random.randrange(playerY-20, playerY+20)
+                    players.pop(0)
+                else:
+                    x=random.randrange(self.taillecarte)
+                    y=random.randrange(self.taillecarte)
+                taillex=random.randrange(reg[2])+reg[3]
+                tailley=random.randrange(reg[2])+reg[3]
+                x=x-int(taillex/2)
+                if x<0:
+                    taillex-=x
+                    x=0
+                y=y-int(tailley/2)
+                if y<0:
+                    tailley-=y
+                    y=0
+                x0=x
+                y0=y
+                listereg=[]
+                for i in range(tailley):
+                    for j in range(taillex):
+                        self.cartecase[y][x]
+                        self.cartecase[y][x]=k
+                        listereg.append([x,y])
+                        x+=1
+                        if x>=self.taillecarte:
+                            x=self.taillecarte-1
+                            break
+                    y+=1
+                    x=x0
+                    if y>=self.taillecarte:
+                        y=self.taillecarte-1
+                        break
+                self.regions[reg[0]].append(listereg)   # Assignation de rÃ©gion pour chaque case
+    
+    
+    
+    def creerregions1(self):
+        for k,reg in self.regionstypes.items():
+            self.regions[reg[0]]=[]     # la clé de région
             for i in range(reg[1]):
                 listecasereg=[]
                 x=random.randrange(self.taillecarte)
