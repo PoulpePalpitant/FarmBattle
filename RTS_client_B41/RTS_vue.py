@@ -624,8 +624,11 @@ class Action():
             self.parent.parent.actionsrequises=action
 
     def setAttackTarget(self,tag):
+        # Pour target une unité ennemie, voici les tags nécessaires:
+        # targetId, isPerso, targetType, enemyPlayerName, self.persochoisi 
+
         if self.persochoisi:
-            action=[self.parent.parent.nomDuJoueur,"setAttackTarget",[tag[1],self.persochoisi]]
+            action=[self.parent.parent.nomDuJoueur,"setAttackTarget",[tag[1],tag[4], tag[5], tag[0], self.persochoisi]]
             self.parent.parent.actionsrequises=action
     
     def chasserressource(self,tag):

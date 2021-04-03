@@ -12,6 +12,7 @@ class DebugSettings(): # Va permettre de dbug bien des affaires
     
     # Settings de lancement de partie
     spawnPlayersNearby = True   # Spawn tout les joueurs très proche
+    generateAi = True           # Start une game avec des ai (pour l'instant ce sont des joueurs inactifs)
     createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
     quickStart = True           # Reset create et launch une partie, immédiatement
 
@@ -738,20 +739,26 @@ class Joueur():
 
     # Cible unité ennemie à attaquer
     def setAttackTarget(self,param):
-        targetId, targetType, enemyPlayerName, units = param
+        targetId, isPerso, targetType, enemyPlayerName, units = param
         target = None # Doit trouvé la cible selon l'id fournie
 
         # Doit chercher la target dans la liste des persos    
-        for t in self.parent.parent.joueurs[enemyPlayerName].persos:
-            if t == targetType:
-                target = self.parent.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
-                break
+        if isPerso == 'perso':
+            target = self.parent.joueurs[enemyPlayerName]
+            target = self.parent.joueurs[enemyPlayerName].persos[targetType]
+            target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+
+            # Doit vérifier si le joueur possède cet id non?
+            # for t in self.parent.parent.joueurs[enemyPlayerName].persos:
+                # if t == targetType:
+                    #break
+                    
 
         # Doit chercher la target dans la liste des bâtiments
         if target != None:
             for t in self.parent.parent.joueurs[enemyPlayerName].batiments:
                 if t == targetType:
-                    target = self.parent.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
+                    target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
                     break
 
         # OPTIMISATION : Placer batiments et persos dans la même liste de "child" de l'objet joueur
@@ -937,6 +944,10 @@ class Partie():
                    [[int(self.aireX/2),int(self.aireY/2)],[self.aireX,self.aireY]]]
         nquad=4
         bord=50
+
+        for i in range(nbrIA):
+            mondict.append(self.parent.generernom())
+
         playersToCreate = len(mondict)
 
         for i in mondict:
