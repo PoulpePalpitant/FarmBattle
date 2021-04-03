@@ -116,6 +116,24 @@ class Caserne():
         self.maxperso=20
         self.perso=0
 
+class ChickenCoop():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
+        # Stats de defenses 
+        self.health = 500
+        self.defense = 2
+
+class PigPen():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
         # Stats de defenses 
         self.health = 500
         self.defense = 2
@@ -477,6 +495,29 @@ class Chevalier(Perso):
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+
+class Chicken(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
+class Pig(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 400
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.HEAVY
+        self.atkDmg = 30
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -662,7 +703,9 @@ class Joueur():
                    "soldat":Soldat,
                    "archer":Archer,
                    "chevalier":Chevalier,
-                   "druide":Druide}
+                   "druide":Druide,
+                   "chicken":Chicken,
+                   "pig":Pig}
     def __init__(self,parent,id,nom,couleur, x,y):
         self.parent=parent
         self.nom=nom
@@ -682,11 +725,15 @@ class Joueur():
                     "soldat":{},
                     "archer":{},
                     "chevalier":{},
-                    "druide":{}}
+                    "druide":{},
+                    "chicken":{},
+                    "pig":{}}
         
         self.batiments={"maison":{},
                        "abri":{},
-                       "caserne":{}}
+                       "caserne":{},
+                       "chickenCoop":{},
+                       "pigPen":{}}
         
         self.actions={"creerperso":self.creerperso,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
@@ -824,12 +871,16 @@ class Partie():
         self.joueurs={}
         self.classesbatiments={"maison":Maison,
                         "caserne":Caserne,
-                        "abri":Abri}
+                        "abri":Abri,
+                        "chickenCoop":ChickenCoop,
+                        "pigPen":PigPen}
         self.classespersos={"ouvrier":Ouvrier,
                     "soldat":Soldat,
                     "archer":Archer,
                     "chevalier":Chevalier,
-                    "druide":Druide}
+                    "druide":Druide,
+                    "chicken":Chicken,
+                    "pig":Pig}
         self.ressourcemorte=[]
         self.listebiotopes=[]
         #self.
@@ -847,9 +898,10 @@ class Partie():
                            3:["marais",3,8,8,"DarkSeaGreen3"],
                            4:["roche",16,6,3,"gray60"],
                            5:["aureus",12,4,3,"gold2"],}
+        self.creerpopulation(mondict,nbrIA)
         self.creerregions()
         self.creerbiotopes()
-        self.creerpopulation(mondict,nbrIA)
+        #self.creerpopulation(mondict,nbrIA)
     
     def creerbiotopes(self):
         # creer des daims éparpillés
@@ -887,10 +939,60 @@ class Partie():
                 self.biotopes[ressource][id]=(objet)
                 self.listebiotopes.append(objet)
                 nressource-=1
+        
+        
                           
     def creerregions(self):
         for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]     # la clé de région
+            players = []
+            for i in self.joueurs:
+                players.append(i)
+            self.regions[reg[0]]=[]     # la cl� de r�gion
+            for i in range(reg[1]):
+                listecasereg=[]
+                if players.__len__() and (k==1 or k == 4):
+                    playerX = math.floor(self.joueurs.get(players[0]).x/self.taillecase)
+                    playerY = math.floor(self.joueurs.get(players[0]).y/self.taillecase)
+                    x=random.randrange(playerX-20, playerX+20)
+                    y=random.randrange(playerY-20, playerY+20)
+                    players.pop(0)
+                else:
+                    x=random.randrange(self.taillecarte)
+                    y=random.randrange(self.taillecarte)
+                taillex=random.randrange(reg[2])+reg[3]
+                tailley=random.randrange(reg[2])+reg[3]
+                x=x-int(taillex/2)
+                if x<0:
+                    taillex-=x
+                    x=0
+                y=y-int(tailley/2)
+                if y<0:
+                    tailley-=y
+                    y=0
+                x0=x
+                y0=y
+                listereg=[]
+                for i in range(tailley):
+                    for j in range(taillex):
+                        self.cartecase[y][x]
+                        self.cartecase[y][x]=k
+                        listereg.append([x,y])
+                        x+=1
+                        if x>=self.taillecarte:
+                            x=self.taillecarte-1
+                            break
+                    y+=1
+                    x=x0
+                    if y>=self.taillecarte:
+                        y=self.taillecarte-1
+                        break
+                self.regions[reg[0]].append(listereg)   # Assignation de région pour chaque case
+    
+    
+    
+    def creerregions1(self):
+        for k,reg in self.regionstypes.items():
+            self.regions[reg[0]]=[]     # la cl� de r�gion
             for i in range(reg[1]):
                 listecasereg=[]
                 x=random.randrange(self.taillecarte)
