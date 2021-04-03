@@ -744,31 +744,20 @@ class Joueur():
 
         # Doit chercher la target dans la liste des persos    
         if isPerso == 'perso':
-            target = self.parent.joueurs[enemyPlayerName]
-            target = self.parent.joueurs[enemyPlayerName].persos[targetType]
-            target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+            if targetId in self.parent.joueurs[enemyPlayerName].persos[targetType]:
+                target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+        elif isPerso == 'batiment':
+            if targetId in self.parent.joueurs[enemyPlayerName].batiments[targetType]:
+                target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
 
-            # Doit vérifier si le joueur possède cet id non?
-            # for t in self.parent.parent.joueurs[enemyPlayerName].persos:
-                # if t == targetType:
-                    #break
-                    
-
-        # Doit chercher la target dans la liste des bâtiments
-        if target != None:
-            for t in self.parent.parent.joueurs[enemyPlayerName].batiments:
-                if t == targetType:
-                    target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
-                    break
-
-        # OPTIMISATION : Placer batiments et persos dans la même liste de "child" de l'objet joueur
-
+        # L'action
         for u in units:
             for j in self.persos.keys():
                 if u in self.persos[j]:
                     self.persos[j][u].cibler([target.x,target.y])
                     if self.persos[j][u].setAttackTarget(target):
                         self.persos[j][u].actioncourante="attack"
+                    break
 
     # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
