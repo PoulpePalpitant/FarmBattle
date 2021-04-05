@@ -362,7 +362,11 @@ class Perso():
         self.vitesse=5
         self.angle=None
 
-        
+        self.actions = {
+                      "deplacer":self.deplacer,
+                      "setAttackTarget":self.setAttackTarget,
+                      "attack": self.attack,
+                      }
 
         # Stats de combats, doivent être spécifié dans les sous-classes
         self.alive = True
@@ -376,7 +380,15 @@ class Perso():
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
+
+    def updateAction(self):
+        # méthode d'action à faire
+        return 
         
+    def update(self):
+        self.deplacer() 
+        self.updateAction()
+
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
             self.deplacer()
@@ -400,8 +412,9 @@ class Perso():
             
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
+            
             if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
-                self.cible=None # Why?
+                self.cible=None 
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
@@ -413,19 +426,21 @@ class Perso():
                 
         
     def attack(self):        
-        if self.cible and self.attackTarget.alive:    # Cible pas dead
-            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.atkRange):    # Range d'attack
+        if self.attackTarget and self.attackTarget.alive:    # Cible pas dead
+            if Helper.withinDistance(self.x, self.y, self.attackTarget.x, self.attackTarget.y, self.atkRange):    # Range d'attack
+                self.cible = None   # Arrêt du mouvement si peut attaquer à distance
                 if self.canAttack:  # Si le cooldown de l'attaque est terminé
                     self.attackTarget.health = self.dealDamage(self.attackTarget)
-                    self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.attackTimer.set(self.atkSpeed) # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
                     self.canAttack = False
                     #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
                     
                 if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
                     self.attackTarget.die() # et la buter
                     self.resetAction()
-            else:
-                self.deplacer()
+            
+            if self.cible == None:
+                self.cibler([self.attackTarget.x, self.attackTarget.y])
         else:
             self.resetAction()
 
@@ -551,6 +566,11 @@ class Ouvrier(Perso):
         self.champchasse=120
         self.javelots=[]
         self.vitesse=random.randrange(5)+5
+        
+        # Actions supplémentaires
+        self.actions["gather"] = self.ramasserressource
+        self.actions["hunt"] = self.chasserressource
+        #self.actions["build"] = self.build
 
         # Combat stats
         self.health = 50
