@@ -777,7 +777,8 @@ class Joueur():
             del self.batiments[type][id]
 
     def sendListOfDeadStuff(self):
-        self.parent.ressourcemorte.append(self.ressourcemorte)
+        for i in self.ressourcemorte:
+            self.parent.ressourcemorte.append(i)
         self.ressourcemorte = []
 
     def chatter(self,param):
@@ -879,7 +880,8 @@ class Joueur():
             for i in self.persos[j].keys():
                 self.persos[j][i].jouerprochaincoup()   
 
-        self.sendListOfDeadStuff()
+        if self.ressourcemorte:
+            self.sendListOfDeadStuff()
                 
     def creerperso(self,param):
         sorteperso,batimentsource,idbatiment,pos=param
