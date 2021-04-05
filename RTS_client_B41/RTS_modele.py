@@ -47,17 +47,14 @@ class SimpleTimer():
 
     def tick(self):
         self.counter += 1 
-        print("Tick: ", self.counter)
 
         if self.counter >= self.interval: 
-            print("Timer est finit: ", self.counter)
             self.running = False
             return True # Counter finis
         else:
             return False
 
     def start(self):  
-        print("Timer commence, durée : ", self.interval)
         self.counter = 0
         self.running = True
 
