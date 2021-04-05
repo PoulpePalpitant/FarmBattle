@@ -301,6 +301,10 @@ class Vue():
         # sinon on spécifie un tag particulier, exemple avec divers tag, attaché par divers événements
         self.canevas.tag_bind("batiment","<Button-1>",self.creerentite)
         self.canevas.tag_bind("perso","<Button-1>",self.ajoutselection)
+
+        self.canevas.tag_bind("perso","<Button-3>",self.setAttackTarget)
+        self.canevas.tag_bind("batiment","<Button-3>",self.setAttackTarget)
+
         self.canevas.tag_bind("arbre","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("aureus","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("roche","<Button-3>",self.ramasserressource)
@@ -387,6 +391,15 @@ class Vue():
             x,y=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
             self.action.position=[x,y]
             self.action.deplacer()
+
+    def setAttackTarget(self,evt):
+        tag=self.canevas.gettags(CURRENT)
+
+        if not tag:
+            print(tag[3])
+        else:
+            if self.nomDuJoueur != tag[0]:  # Si Ennemie
+                self.action.setAttackTarget(tag)
             
     # Cette fonction permet se se deplacer via un click sur la minicarte
     def deplacercarte(self,evt):
@@ -620,6 +633,14 @@ class Action():
     def deplacer(self):
         if self.persochoisi:
             action=[self.parent.parent.nomDuJoueur,"deplacer",[self.position,self.persochoisi]]
+            self.parent.parent.actionsrequises=action
+
+    def setAttackTarget(self,tag):
+        # Pour target, voici les tags nécessaires:
+        # targetId, isPerso, targetType, enemyPlayerName, self.persochoisi 
+
+        if self.persochoisi:
+            action=[self.parent.parent.nomDuJoueur,"setAttackTarget",[tag[1],tag[4], tag[5], tag[0], self.persochoisi]]
             self.parent.parent.actionsrequises=action
     
     def chasserressource(self,tag):

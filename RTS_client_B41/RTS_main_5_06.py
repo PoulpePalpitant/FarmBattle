@@ -131,7 +131,11 @@ class Controleur():
     # lors que le createur voit tous ses joueurs esperes insrit il peut (seul d'ailleurs) lancer la partie
     # cette methode ne fait que changer l'etat de la partie sur le serveur pour le mettre a courant
     # lorsque chaque joueur recevra cet etat la partie sera initialiser et demarrer localement pour chacun
-    def lancerpartie(self,nbrIA=0):
+    def lancerpartie(self,nbrIA = 0):
+        
+        if DebugSettings.generateAi:    # debug settings debug settingsdebug settingsdebug settingsdebug settingsdebug settingsdebug settingsdebug settingsdebug settings
+            nbrIA = 3
+
         ## au lancement le champ 'champnbtIA' du lobby est lu...
         url = self.urlserveur+"/lancerpartie"
         params = {"nom": self.nomDuJoueur,
@@ -205,6 +209,7 @@ class Controleur():
             else:
                 actions=None
             self.actionsrequises=[]
+            
             url = self.urlserveur+"/bouclersurjeu"
             params = {"nom": self.nomDuJoueur,
                       "cadrejeu":self.cadrejeu,
@@ -222,6 +227,7 @@ class Controleur():
     
     # generateur de nouveau nom, 
     # peut generer UN NOM EXISTANT mais c'est rare, NON GERER PAR LE SERVEUR        
+    
     def generernom(self): 
         nomDuJoueur="JAJA_"+str(random.randrange(100,1000))
         return nomDuJoueur

@@ -12,14 +12,56 @@ class DebugSettings(): # Va permettre de dbug bien des affaires
     
     # Settings de lancement de partie
     spawnPlayersNearby = True   # Spawn tout les joueurs très proche
+    generateAi = True           # Start une game avec des ai (pour l'instant ce sont des joueurs inactifs)
     createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
     quickStart = True           # Reset create et launch une partie, immédiatement
-
 
 class ARMOR_TYPES():
     LIGHT = 'LIGHT'
     HEAVY = 'HEAVY'
     SUPRA_HARD = 'SUPRA_HARD'
+
+class SimpleTimer():
+    def __init__(self, parent, interval):
+        self.parent = parent
+        self.interval = interval
+        self.counter = 0
+        self.running = True
+    # Une alternative serait de juste setté un point future, et de checker si on est rendu
+    # AddDelay(time + duration)
+    # tick -> if time >= pointfuture: 
+    #             timer est finit
+
+
+    def set(self, interval):
+        try :
+            if interval > 0:  # Pas de counter négatif
+                self.counter = 0
+                self.interval = interval
+                self.running = True
+        except ValueError :
+                print("Timer null ou négatif is no bueno")
+    
+    def isRunning(self): 
+        return self.running 
+
+    def tick(self):
+        self.counter += 1 
+
+        if self.counter >= self.interval: 
+            self.running = False
+            return True # Counter finis
+        else:
+            return False
+
+    def start(self):  
+        self.counter = 0
+        self.running = True
+
+    def stop(self): 
+        self.counter = self.interval = 0
+
+
 
 class Batiment():
     def __init__(self,parent,id,x,y):
@@ -34,10 +76,16 @@ class Batiment():
         self.cartebatiment=[]
 
         # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
+        self.alive = True
         self.health = 0
         self.defense = 2
 
         self.armorType = ARMOR_TYPES.HEAVY
+
+    def die(self):
+        self.alive = False
+        self.health = 0
+        self.parent.addToListOfDeadStuff(False, self.montype, self.id) # S'ajoute à la liste des choses qui sont dead
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype):
@@ -301,6 +349,7 @@ class Perso():
     def __init__(self,parent,id,batiment,couleur,x,y,montype):
         self.parent=parent
         self.id=id
+        self.type = montype
         self.actioncourante="deplacer"
         self.batimentmere=batiment
         self.dir="D"
@@ -313,12 +362,17 @@ class Perso():
         self.vitesse=5
         self.angle=None
 
+        
+
         # Stats de combats, doivent être spécifié dans les sous-classes
+        self.alive = True
         self.health = 0
         self.defense = 0
         self.atkDmg = 0
-        self.atkRange = 3   # Default pour melee unit
+        self.atkRange = 10   # Default pour melee unit
         self.atkSpeed = 0
+        self.attackTimer = SimpleTimer(self, self.atkSpeed)
+        self.canAttack = True
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
 
@@ -347,28 +401,34 @@ class Perso():
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
             if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
-                self.cible=None
+                self.cible=None # Why?
 
-    ######################################### DOIT ÊTRE TESTÉ et implémenté
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
-        if cible.parent != self.parent: # Si ennemie
+        if cible.parent != self.parent: # SAFETY: Si ennemie    
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
+                return True
+        return False
                 
         
     def attack(self):        
-        if self.cible and self.cible.health > 0:    # Cible pas dead
-            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.atkRange):    # Range d'attack
-                # Si le cooldown de l'attaque est terminé
+        if self.cible and self.attackTarget.alive:    # Cible pas dead
+            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.atkRange):    # Range d'attack
+                if self.canAttack:  # Si le cooldown de l'attaque est terminé
+                    self.attackTarget.health = self.dealDamage(self.attackTarget)
+                    self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.canAttack = False
                     #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
-                    self.cible.health = self.dealDamage(self.cible)
                     
-                    if self.cible.health <= 0: # Si la cible meurt ici, faut arrêter de la target
-                        self.cible = None
-                # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
+                    self.attackTarget.die() # et la buter
+                    self.resetAction()
             else:
                 self.deplacer()
+        else:
+            self.resetAction()
+
         
     
     def dealDamage(self, target):
@@ -376,14 +436,24 @@ class Perso():
         # ex: if dmgtype = FEU and armor = BOIS
         # bonusDmg = 0.15
         # dmg = self.atkDmg + self.atkDmg * bonusDmg
-        dmg = self.atkDmg - target.armor
+        dmg = self.atkDmg - target.defense
 
         if dmg < 1: # Comme dans les autres jeux du genre, le dmg minimum est toujours 1
             dmg = 1
 
         return target.health - dmg
-    ######################################### DOIT ÊTRE TESTÉ
-                
+
+    def resetAction(self):
+        self.cible = self.attackTarget = self.actioncourante = None
+
+
+    def die(self):
+        self.alive = False
+        self.cible = None
+        self.attackTarget = None
+        self.health = 0
+        self.parent.addToListOfDeadStuff(True, self.type, self.id) # S'ajoute à la liste des choses qui sont dead
+
     def cibler(self,pos):
         self.cible=pos
         if self.x<self.cible[0]:
@@ -401,8 +471,13 @@ class Soldat(Perso):
         self.defense = 0
         self.atkDmg = 6
         self.atkSpeed = 5
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
     def jouerprochaincoup(self):
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
         if self.actioncourante =="deplacer":
             self.deplacer()
 
@@ -483,6 +558,7 @@ class Ouvrier(Perso):
         self.atkDmg = 2
         self.atkRange = 0   
         self.atkSpeed = 5
+        self.attackTimer.set(self.atkSpeed)
 
         
     def jouerprochaincoup(self):
@@ -657,7 +733,7 @@ class Joueur():
         self.couleur=couleur
         self.monchat=[]
         self.chatneuf=0
-        self.ressourcemorte=[]
+        self.ressourcemorte=[]#
         self.ressources={"nourriture":200,
                          "arbre":200,
                          "roche":200,
@@ -689,6 +765,19 @@ class Joueur():
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
         
+    def addToListOfDeadStuff(self, isPerso, type, id):
+        if isPerso:
+            self.ressourcemorte.append(self.persos[type][id])
+            del self.persos[type][id]
+        else:
+            self.ressourcemorte.append(self.batiments[type][id])
+            del self.batiments[type][id]
+
+    def sendListOfDeadStuff(self):
+        for i in self.ressourcemorte:
+            self.parent.ressourcemorte.append(i)
+        self.ressourcemorte = []
+
     def chatter(self,param):
         txt,envoyeur,receveur=param
         self.parent.joueurs[envoyeur].monchat.append(txt)
@@ -728,14 +817,26 @@ class Joueur():
 
     # Cible unité ennemie à attaquer
     def setAttackTarget(self,param):
-        target,troupe=param
-        for i in troupe:
-            for j in self.persos.keys():
-                if i in self.persos[j]:
-                    self.persos[j][i].cibler([target.x,target.y])
-                    self.persos[j][i].setAttackTarget(target)
-                    self.persos[j][i].actioncourante="attack"
+        targetId, isPerso, targetType, enemyPlayerName, units = param
+        target = None # Doit trouvé la cible selon l'id fournie
 
+        # Doit chercher la target dans la liste des persos    
+        if isPerso == 'perso':
+            if targetId in self.parent.joueurs[enemyPlayerName].persos[targetType]:
+                target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+        else:
+            targetType = isPerso # le tag numero [1] devient le targetType dans ce contexte ci, beceause? "Spaghetti"
+            if targetId in self.parent.joueurs[enemyPlayerName].batiments[targetType]: 
+                target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
+
+        # L'action
+        for u in units:
+            for j in self.persos.keys():
+                if u in self.persos[j]:
+                    if self.persos[j][u].setAttackTarget(target):
+                        self.persos[j][u].actioncourante="attack"
+                    self.persos[j][u].cibler([target.x,target.y])   #   Même si la target n'est pas valide pour une attaque, les perso vont se déplacer quand même
+                    break
 
     # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
@@ -744,10 +845,10 @@ class Joueur():
         self.creerperso(["ouvrier","maison",idmaison,[]])
         
         # Pour debug plus rapidement
-        # if DebugSettings.createAllUnitsAndBuildings
-        # idCaserne = getprochainid()
-        # self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
-        # self.creerperso(["soldat","caserne",idCaserne,[]])
+        if DebugSettings.createAllUnitsAndBuildings:
+            idCaserne = getprochainid()
+            self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
+            self.creerperso(["soldat","caserne",idCaserne,[]])
     
     def construirebatiment(self,param):
         sorte,pos=param
@@ -776,6 +877,9 @@ class Joueur():
         for j in self.persos.keys():
             for i in self.persos[j].keys():
                 self.persos[j][i].jouerprochaincoup()   
+
+        if self.ressourcemorte:
+            self.sendListOfDeadStuff()
                 
     def creerperso(self,param):
         sorteperso,batimentsource,idbatiment,pos=param
@@ -966,6 +1070,10 @@ class Partie():
                    [[int(self.aireX/2),int(self.aireY/2)],[self.aireX,self.aireY]]]
         nquad=4
         bord=50
+
+        for i in range(nbrIA):
+            mondict.append(self.parent.generernom())
+
         playersToCreate = len(mondict)
 
         for i in mondict:
@@ -1169,6 +1277,8 @@ class Partie():
         self.biotopes[type].pop(ress.id)
         self.ressourcemorte.append(ress)
         
+
+    # C'est ici qu'on reçoit une action.
     #############################################################################    
     # ATTENTION : NE PAS TOUCHER                 
     def ajouteractionsafaire(self,actionsrecues):
