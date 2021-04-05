@@ -361,6 +361,7 @@ class Perso():
         
 
         # Stats de combats, doivent être spécifié dans les sous-classes
+        self.alive = True
         self.health = 0
         self.defense = 0
         self.atkDmg = 0
@@ -398,7 +399,6 @@ class Perso():
             if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
                 self.cible=None # Why?
 
-    ######################################### DOIT ÊTRE TESTÉ et implémenté
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
         if cible.parent != self.parent: # Si ennemie
@@ -409,22 +409,22 @@ class Perso():
                 
         
     def attack(self):        
-        if self.cible and self.attackTarget.health > 0:    # Cible pas dead
+        if self.cible and self.attackTarget.alive:    # Cible pas dead
             if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.atkRange):    # Range d'attack
                 if self.canAttack:  # Si le cooldown de l'attaque est terminé
                     self.attackTarget.health = self.dealDamage(self.attackTarget)
-                    self.attackTimer.start()  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
                     self.canAttack = False
                     #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
                     
                 if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
-                    if self.cible == self.attackTarget:
-                        self.cible = None
-
-                    self.attackTarget = None
-                    self.actioncourante = None
+                    self.attackTarget.die() # et la buter
+                    self.resetAction()
             else:
                 self.deplacer()
+        else:
+            self.resetAction()
+
         
     
     def dealDamage(self, target):
@@ -439,8 +439,16 @@ class Perso():
 
         return target.health - dmg
 
-    ######################################### DOIT ÊTRE TESTÉ
-                
+    def resetAction(self):
+        self.cible = self.attackTarget = self.actioncourante = None
+
+
+    def die(self):
+        self.alive = False
+        self.cible = None
+        self.attackTarget = None
+        self.health = 0
+
     def cibler(self,pos):
         self.cible=pos
         if self.x<self.cible[0]:
@@ -458,7 +466,7 @@ class Soldat(Perso):
         self.defense = 0
         self.atkDmg = 6
         self.atkSpeed = 5
-        self.attackTimer = SimpleTimer(self, self.atkSpeed) # Obligatoire si unité peut attaquer
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
     def jouerprochaincoup(self):
         if self.attackTimer.isRunning():
@@ -545,7 +553,7 @@ class Ouvrier(Perso):
         self.atkDmg = 2
         self.atkRange = 0   
         self.atkSpeed = 5
-        self.attackTimer.set(5)
+        self.attackTimer.set(self.atkSpeed)
 
         
     def jouerprochaincoup(self):
@@ -720,7 +728,7 @@ class Joueur():
         self.couleur=couleur
         self.monchat=[]
         self.chatneuf=0
-        self.ressourcemorte=[]
+        self.ressourcemorte=[]#
         self.ressources={"nourriture":200,
                          "arbre":200,
                          "roche":200,
