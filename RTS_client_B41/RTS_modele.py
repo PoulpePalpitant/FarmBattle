@@ -34,14 +34,14 @@ class SimpleTimer():
 
 
     def set(self, interval):
-        if interval <= 0:  # Pas de counter négatif
-            return False
-        else :
-            self.counter = 0
-            self.interval = interval
-            self.running = True
-            return True
-
+        try :
+            if interval > 0:  # Pas de counter négatif
+                self.counter = 0
+                self.interval = interval
+                self.running = True
+        except ValueError :
+                print("Timer null ou négatif is no bueno")
+    
     def isRunning(self): 
         return self.running 
 
@@ -358,11 +358,13 @@ class Perso():
         self.vitesse=5
         self.angle=None
 
+        
+
         # Stats de combats, doivent être spécifié dans les sous-classes
         self.health = 0
         self.defense = 0
         self.atkDmg = 0
-        self.atkRange = 3   # Default pour melee unit
+        self.atkRange = 10   # Default pour melee unit
         self.atkSpeed = 0
         self.attackTimer = SimpleTimer(self, self.atkSpeed)
         self.canAttack = True
@@ -394,7 +396,7 @@ class Perso():
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
             if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
-                self.cible=None
+                self.cible=None # Why?
 
     ######################################### DOIT ÊTRE TESTÉ et implémenté
     # Vérifie si la cible est valide pour une attaque. 
@@ -407,19 +409,20 @@ class Perso():
                 
         
     def attack(self):        
-        if self.cible and self.cible.health > 0:    # Cible pas dead
-            if Helper.withinDistance(self.x, self.y, self.cible.x, self.cible.y, self.atkRange):    # Range d'attack
-                self.canAttack = True  # Si le cooldown de l'attaque est terminé
-                self.cible.health = self.dealDamage(self.cible)
-                #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
+        if self.cible and self.attackTarget.health > 0:    # Cible pas dead
+            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.atkRange):    # Range d'attack
+                if self.canAttack:  # Si le cooldown de l'attaque est terminé
+                    self.attackTarget.health = self.dealDamage(self.attackTarget)
+                    self.attackTimer.start()  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.canAttack = False
+                    #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
                     
                 if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
                     if self.cible == self.attackTarget:
                         self.cible = None
 
                     self.attackTarget = None
-
-                self.attackTimer.start()  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.actioncourante = None
             else:
                 self.deplacer()
         
@@ -429,12 +432,13 @@ class Perso():
         # ex: if dmgtype = FEU and armor = BOIS
         # bonusDmg = 0.15
         # dmg = self.atkDmg + self.atkDmg * bonusDmg
-        dmg = self.atkDmg - target.armor
+        dmg = self.atkDmg - target.defense
 
         if dmg < 1: # Comme dans les autres jeux du genre, le dmg minimum est toujours 1
             dmg = 1
 
         return target.health - dmg
+
     ######################################### DOIT ÊTRE TESTÉ
                 
     def cibler(self,pos):
@@ -454,6 +458,7 @@ class Soldat(Perso):
         self.defense = 0
         self.atkDmg = 6
         self.atkSpeed = 5
+        self.attackTimer = SimpleTimer(self, self.atkSpeed) # Obligatoire si unité peut attaquer
 
     def jouerprochaincoup(self):
         if self.attackTimer.isRunning():
@@ -801,9 +806,9 @@ class Joueur():
         for u in units:
             for j in self.persos.keys():
                 if u in self.persos[j]:
-                    self.persos[j][u].cibler([target.x,target.y])
                     if self.persos[j][u].setAttackTarget(target):
                         self.persos[j][u].actioncourante="attack"
+                    self.persos[j][u].cibler([target.x,target.y])   #   Même si la target n'est pas valide pour une attaque, les perso vont se déplacer quand même
                     break
 
     # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
@@ -813,10 +818,10 @@ class Joueur():
         self.creerperso(["ouvrier","maison",idmaison,[]])
         
         # Pour debug plus rapidement
-        # if DebugSettings.createAllUnitsAndBuildings
-        # idCaserne = getprochainid()
-        # self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
-        # self.creerperso(["soldat","caserne",idCaserne,[]])
+        if DebugSettings.createAllUnitsAndBuildings:
+            idCaserne = getprochainid()
+            self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
+            self.creerperso(["soldat","caserne",idCaserne,[]])
     
     def construirebatiment(self,param):
         sorte,pos=param
