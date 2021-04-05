@@ -408,7 +408,7 @@ class Perso():
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
-        if cible.parent != self.parent: # Si ennemie
+        if cible.parent != self.parent: # SAFETY: Si ennemie    
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
                 return True
@@ -827,8 +827,9 @@ class Joueur():
         if isPerso == 'perso':
             if targetId in self.parent.joueurs[enemyPlayerName].persos[targetType]:
                 target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
-        elif isPerso == 'batiment':
-            if targetId in self.parent.joueurs[enemyPlayerName].batiments[targetType]:
+        else:
+            targetType = isPerso # le tag numero [1] devient le targetType dans ce contexte ci, beceause? "Spaghetti"
+            if targetId in self.parent.joueurs[enemyPlayerName].batiments[targetType]: 
                 target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
 
         # L'action

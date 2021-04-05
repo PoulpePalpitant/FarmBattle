@@ -227,6 +227,7 @@ class Controleur():
     
     # generateur de nouveau nom, 
     # peut generer UN NOM EXISTANT mais c'est rare, NON GERER PAR LE SERVEUR        
+    
     def generernom(self): 
         nomDuJoueur="JAJA_"+str(random.randrange(100,1000))
         return nomDuJoueur
