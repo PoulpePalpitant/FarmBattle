@@ -79,10 +79,16 @@ class Batiment():
         self.cartebatiment=[]
 
         # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
+        self.alive = True
         self.health = 0
         self.defense = 2
 
         self.armorType = ARMOR_TYPES.HEAVY
+
+    def die(self):
+        self.alive = False
+        self.health = 0
+        self.parent.addToListOfDeadStuff(False, self.montype, self.id) # S'ajoute à la liste des choses qui sont dead
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype):
@@ -346,6 +352,7 @@ class Perso():
     def __init__(self,parent,id,batiment,couleur,x,y,montype):
         self.parent=parent
         self.id=id
+        self.type = montype
         self.actioncourante="deplacer"
         self.batimentmere=batiment
         self.dir="D"
@@ -448,6 +455,7 @@ class Perso():
         self.cible = None
         self.attackTarget = None
         self.health = 0
+        self.parent.addToListOfDeadStuff(True, self.type, self.id) # S'ajoute à la liste des choses qui sont dead
 
     def cibler(self,pos):
         self.cible=pos
@@ -760,6 +768,18 @@ class Joueur():
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
         
+    def addToListOfDeadStuff(self, isPerso, type, id):
+        if isPerso:
+            self.ressourcemorte.append(self.persos[type][id])
+            del self.persos[type][id]
+        else:
+            self.ressourcemorte.append(self.batiments[type][id])
+            del self.batiments[type][id]
+
+    def sendListOfDeadStuff(self):
+        self.parent.ressourcemorte.append(self.ressourcemorte)
+        self.ressourcemorte = []
+
     def chatter(self,param):
         txt,envoyeur,receveur=param
         self.parent.joueurs[envoyeur].monchat.append(txt)
@@ -858,6 +878,8 @@ class Joueur():
         for j in self.persos.keys():
             for i in self.persos[j].keys():
                 self.persos[j][i].jouerprochaincoup()   
+
+        self.sendListOfDeadStuff()
                 
     def creerperso(self,param):
         sorteperso,batimentsource,idbatiment,pos=param
