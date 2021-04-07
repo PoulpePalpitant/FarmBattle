@@ -438,6 +438,8 @@ class Perso():
                 if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
                     self.attackTarget.die() # et la buter
                     self.resetAction()
+                    
+                return
             
             if self.cible == None:
                 self.cibler([self.attackTarget.x, self.attackTarget.y])
@@ -493,10 +495,8 @@ class Soldat(Perso):
             if self.attackTimer.tick():
                 self.canAttack = True
 
-        if self.actioncourante =="deplacer":
-            self.deplacer()
-
-        elif self.actioncourante == "attack":
+        self.deplacer()
+        if self.actioncourante == "attack":
             self.attack()
 
 
