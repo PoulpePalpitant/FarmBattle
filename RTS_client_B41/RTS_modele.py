@@ -86,6 +86,8 @@ class Batiment():
         self.alive = False
         self.health = 0
         self.parent.addToListOfDeadStuff(False, self.montype, self.id) # S'ajoute à la liste des choses qui sont dead
+        #self.parent.avertirressourcemort(self.typeressource,self.cibleressource)              
+
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype):
@@ -377,6 +379,9 @@ class Perso():
         self.mana=0
 
 
+
+#---- Si on revampe tout l'AI, on passe par ici
+
     def updateAction(self):
         # méthode d'action à faire
         return 
@@ -384,6 +389,11 @@ class Perso():
     def update(self):
         self.deplacer() 
         self.updateAction()
+        
+        # Update other stuff
+        
+#---- Si on revampe tout l'AI, on passe par ici
+
 
     def jouerprochaincoup(self):
         if self.attackTimer.isRunning():
@@ -479,6 +489,20 @@ class Perso():
         else:
             self.dir="G"
         self.image=self.image[:-1]+self.dir
+
+    def detectEnnemys(self):
+        ennemys = []
+        ennemyUnits = []
+        ennemyBuildings = []
+
+        # Consulte hashmap
+        # Pour chacune des tuiles, check si appartient à un autre joueurs
+        # Check si unit ou building
+        # Ajoute à liste
+
+        ennemys.append(ennemyUnits)         
+        ennemys.append(ennemyBuildings) # On veut les séparés car on veut prioriser les unités sur les buildings
+        return ennemys
         
 class Soldat(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -1140,19 +1164,6 @@ class Partie():
                 else:
                     locationOccupied = True
             
-    # Cette methode est une amorce non-fonctionnel a l'IA       
-    #def creerIA(self):    
-    #    #AJOUTS IA dans la methode partie.creerpopulation
-    #    lesIAs=[]
-    #    for i in range(int(nbrIA)):
-    #        lesIAs.append("IA_"+str(i))
-    #          
-    #    for i in lesIAs:
-    #        id=getprochainid()
-    #        x=random.randrange(self.aireX)
-    #        y=random.randrange(self.aireY)
-    #        self.joueurs[i]=IA(self,id,i,x,y)
-            
     def deplacer(self):
         for i in self.joueurs:
             self.joueurs[i].deplacer()
@@ -1226,7 +1237,6 @@ class Partie():
         return [cx,cy]
     
     def getcartebbox(self,x1,y1,x2,y2):# case d'origine en cx et cy,  pour position pixels x, y
-         # case d'origine en cx et cy,  pour position pixels x, y
         if x1<0:
             x1=1
         if y1<0:
