@@ -339,11 +339,7 @@ class Javelot():
             dist=Helper.calcDistance(self.x,self.y,self.proiex,self.proiey)
             if dist<self.vitesse:
                 self.parent.javelots.remove(self)
-                self.parent.actioncourante="ciblerproie"
-                
-                
-            
-        
+                self.parent.actioncourante="ciblerproie"       
                   
 class Perso():    
     def __init__(self,parent,id,batiment,couleur,x,y,montype):
@@ -374,7 +370,7 @@ class Perso():
         self.defense = 0
         self.atkDmg = 0
         self.atkRange = 10   # Default pour melee unit
-        self.atkSpeed = 0
+        self.atkSpeed = 0    # Nombre de ticks par attaque
         self.attackTimer = SimpleTimer(self, self.atkSpeed)
         self.canAttack = True
         self.armorType = ARMOR_TYPES.LIGHT
@@ -390,8 +386,13 @@ class Perso():
         self.updateAction()
 
     def jouerprochaincoup(self):
-        if self.actioncourante=="deplacer":
-            self.deplacer()
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
+        self.deplacer()
+        if self.actioncourante == "attack":
+            self.attack()
             
     def deplacer(self):
         if self.cible:
@@ -490,16 +491,6 @@ class Soldat(Perso):
         self.atkSpeed = 5
         self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
-    def jouerprochaincoup(self):
-        if self.attackTimer.isRunning():
-            if self.attackTimer.tick():
-                self.canAttack = True
-
-        self.deplacer()
-        if self.actioncourante == "attack":
-            self.attack()
-
-
 class Archer(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
@@ -507,10 +498,9 @@ class Archer(Perso):
         # Stats de combats
         self.health = 60
         self.defense = 0
-        self.atkDmg = 8
         self.atkRange = 30   
         self.atkSpeed = 7
-
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 class Chevalier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -521,8 +511,9 @@ class Chevalier(Perso):
         self.defense = 1
         self.armorType = ARMOR_TYPES.HEAVY
         self.atkDmg = 15
-        self.atkRange = 5   
         self.atkSpeed = 2
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
 
 
 class Druide(Perso):
@@ -537,8 +528,10 @@ class Chicken(Perso):
         self.defense = 1
         self.armorType = ARMOR_TYPES.LIGHT
         self.atkDmg = 15
-        self.atkRange = 5   
-        self.atkSpeed = 2
+        self.atkRange = 200   
+        self.atkSpeed = 10
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
 
 class Pig(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -548,8 +541,9 @@ class Pig(Perso):
         self.defense = 1
         self.armorType = ARMOR_TYPES.HEAVY
         self.atkDmg = 30
-        self.atkRange = 5   
         self.atkSpeed = 2
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
 
                
 class Ouvrier(Perso):
@@ -576,12 +570,14 @@ class Ouvrier(Perso):
         self.health = 50
         self.defense = 0
         self.atkDmg = 2
-        self.atkRange = 0   
         self.atkSpeed = 5
         self.attackTimer.set(self.atkSpeed)
-
         
     def jouerprochaincoup(self):
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
         if self.actioncourante=="deplacer":
             self.deplacer()
         elif self.actioncourante=="ciblerressource":
@@ -614,6 +610,9 @@ class Ouvrier(Perso):
         elif self.actioncourante=="attendrejavelot":
             for i in self.javelots:
                 i.bouger()
+        elif self.actioncourante=="attack":
+            self.deplacer()
+            self.attack()
             
     def lancerjavelot(self,proie):
         if self.javelots==[]:
@@ -687,6 +686,8 @@ class Ouvrier(Perso):
                     else:
                         self.typeressource=None
                         self.cible=None
+                else:
+                    self.cible=None
                         
     def chasserressource(self,typeress,id,proie):
         if proie.etat=="vivant":
