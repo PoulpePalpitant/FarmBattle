@@ -514,7 +514,7 @@ class Perso():
         ennemyBuildings = []
 
         tilesAround = self.parent.parent.getOccupiedTilesAround(self.x,self.y,self.champvision)
-
+        
         print(tilesAround)
 
         # Consulte hashmap
@@ -1281,7 +1281,13 @@ class Partie():
 
         return self.hashmap[cx][cy]
 
-    def getOccupiedTilesAround(self,x,y,d):
+    def getOccupiedTilesAround(self,x,y,distance):
+
+        # Distance d serait en case et non en pixel, faut convert je crois
+        distanceCase = int (distance / self.taillecase)
+        if distanceCase < 1:
+            distanceCase = 0
+
         cx=int(x/self.taillecase) 
         cy=int(y/self.taillecase) 
 
@@ -1292,8 +1298,8 @@ class Partie():
         pxcentrey=(cy*self.taillecase) + demiCase
         
         # la case superieur gauche de la case d'origine
-        casecoinx1=cx-d
-        casecoiny1=cy-d
+        casecoinx1=cx-distanceCase
+        casecoiny1=cy-distanceCase
 
         # assure qu'on deborde pas
         if casecoinx1<0:
@@ -1302,8 +1308,8 @@ class Partie():
             casecoiny1=0
 
         # la case inferieur droite
-        casecoinx2=cx+d
-        casecoiny2=cy+d
+        casecoinx2=cx+distanceCase
+        casecoiny2=cy+distanceCase
 
         # assure qu'on deborde pas
         if casecoinx2 >= self.taillecarte:
@@ -1311,17 +1317,14 @@ class Partie():
         if casecoiny2 >= self.taillecarte:
             casecoiny2 = self.taillecarte-1
 
-        distmax=(d * self.taillecase) + demiCase
-        caseActuelle = self.trouvercase(x,y)
-        caseActuelle = self.hashmap[caseActuelle[0]][caseActuelle[1]]
+        distmax = (distanceCase * self.taillecase) + demiCase
+
+        print(self.trouvercase(x,y))
 
         t1=[]
         for i in range(casecoinx1,casecoinx2):
             for j in range(casecoiny1,casecoiny2): 
                 case = self.hashmap[i][j]
-
-                if caseActuelle == case:
-                    print('wow')
 
                 pxcentrecasex=(i * self.taillecase) + demiCase
                 pxcentrecasey=(j * self.taillecase) + demiCase
