@@ -174,9 +174,7 @@ class Daim():
             else:
                 if self.parent.cartecase[case[1]][case[0]]>0:
                     pass
-                    #print("marche dans ",self.parent.regionstypes[self.parent.cartecase[case[1]][case[0]]])
-                # changer la vitesse tant qu'il est sur un terrain irregulier
-                # FIN DE TEST POUR SURFACE MARCHEE
+
                 self.x,self.y=x1,y1 
                 dist=Helper.calcDistance(self.x,self.y,x,y)
                 if dist <=self.vitesse:
@@ -406,26 +404,27 @@ class Perso():
             
     def deplacer(self):
         if self.cible:
-            x=self.cible[0]
-            y=self.cible[1]
-            ang=Helper.calcAngle(self.x,self.y,x,y)  
-            x1,y1=Helper.getAngledPoint(ang,self.vitesse,self.x,self.y)
-            ####### ICI METTRE TEST PROCHAIN PAS POUR VOIR SI ON PEUT AVANCER 
-            ####### SINON RTOUVER VOIE DE CONTOURNEMENT
-            casex=x1/self.parent.parent.taillecase
-            if casex!=int(casex):
-                casex=int(casex)+1
-            casey=y1/self.parent.parent.taillecase
-            if casey!=int(casey):
-                casey=int(casey)+1
-            if self.parent.parent.cartecase[int(casey)][int(casex)]>0:
-                print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[int(casey)][int(casex)]])
+            ang=Helper.calcAngle(self.x,self.y,self.cible[0],self.cible[1])  
+            x,y=Helper.getAngledPoint(ang,self.vitesse,self.x,self.y)
             
-            ####### FIN DE TEST POUR SURFACE MARCHEE
-            self.x,self.y=x1,y1 
+            casex1,casey1 = self.parent.parent.trouvercase(self.x, self.y) # Case départ
+            casex2,casey2 = self.parent.parent.trouvercase(x, y)           # Case d'arrivé
+            self.x,self.y=x,y # Avance le tit bonhomme. Pourrait sortir de la map je suppose
             
-            if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
-                self.cible=None 
+            if casex1 != casex2 or casey1 != casey2: 
+                print(self.parent.parent.hashmap[casex1][casey1])
+                if self in self.parent.parent.hashmap[casex1][casey1]["persos"]:    # safety measures
+                    self.parent.parent.hashmap[casex1][casey1]["persos"].remove(self)    
+                
+                
+                self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    # Ajout de la map
+                print(self.parent.parent.hashmap[casex2][casey2])
+
+                if self.parent.parent.cartecase[casex2][casey2]>0:
+                    print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
+                
+                if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
+                    self.cible=None 
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
@@ -946,6 +945,8 @@ class Partie():
         self.taillecase=20
         self.taillecarte=int(self.aireX/self.taillecase)
         self.cartecase=0
+        self.hashmap = None     # contiendra tout les données sur l'emplacements des unités et batiments
+
         self.makecartecase(self.taillecarte)
         self.delaiprochaineaction=20
         self.joueurs={}
@@ -1219,6 +1220,16 @@ class Partie():
             for j in range(taille):
                 t1.append(0)
             self.cartecase.append(t1)  
+
+        t1=[]
+        for i in range(taille):
+            t2=[]
+            for j in range(taille):
+                t2.append({"persos":[],
+                           "batiments":[]})
+            t1.append(t2)
+
+        self.hashmap = t1
     
     def trouvercase(self,x,y):
         cx=int(x/self.taillecase) 
@@ -1234,7 +1245,25 @@ class Partie():
             cx-=1
         if cy==self.taillecarte:
             cy-=1
+
         return [cx,cy]
+
+    def findTileInHashMap(self,x,y):
+        cx=int(x/self.taillecase) 
+        cy=int(y/self.taillecase)
+        if cx!=0 and x%self.taillecase>0:
+            cx+=1
+            
+        if cy!=0 and y%self.taillecase>0:
+            cy+=1
+            
+        # possible d'etre dans une case trop loin
+        if cx==self.taillecarte:
+            cx-=1
+        if cy==self.taillecarte:
+            cy-=1
+
+        return self.hashmap[cx][cy]
     
     def getcartebbox(self,x1,y1,x2,y2):# case d'origine en cx et cy,  pour position pixels x, y
         if x1<0:
@@ -1256,6 +1285,7 @@ class Partie():
             for j in range(cx1,cx2):
                 case=self.cartecase[i][j]
                 t1.append([j,i])
+             
         return t1  
         
 # CORRECTION REQUISE : PAS SUR QUE CETTE FONCITON SOIT ENCORE REQUISE
