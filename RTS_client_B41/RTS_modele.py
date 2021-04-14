@@ -416,6 +416,9 @@ class Perso():
         self.deplacer()
         if self.actioncourante == "attack":
             self.attack()
+        else:
+            if self.actioncourante == None:
+                self.targetNearestEnnemy()
             
     def deplacer(self):
         if self.cible:
@@ -440,7 +443,6 @@ class Perso():
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
-        self.detectEnnemys()    # Hey! I'm testing here!   
         if cible.parent != self.parent: # SAFETY: Si ennemie    
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
@@ -509,10 +511,11 @@ class Perso():
         self.image=self.image[:-1]+self.dir
 
 
+    # Une autre méthodes pourrait être intégré pour prioriser les ennemies les plus 'dangereux', au besoin
     def targetNearestEnnemy(self):
-        ennemys = []
         ennemyUnits = []
         ennemyBuildings = []
+        nearestEnnemy = None
 
         # Consulte hashmap
         tilesAround = self.parent.parent.getOccupiedTilesAround(self.x,self.y,self.champvision)
@@ -528,34 +531,20 @@ class Perso():
                     if b.parent != self.parent: # Si ennemie !   
                         ennemyBuildings.append(b)
 
-        # On veut les séparés car on veut prioriser les unités sur les buildings
-        ennemys.append({'persos':ennemyUnits})         
-        ennemys.append({'batiments':ennemyBuildings}) 
-        return ennemys
+        if ennemyUnits:
+            nearestEnnemy = Helper.findNearest(self.x, self.y, ennemyUnits) # Priorise toujours les unités sur les batiments
+        else: 
+            nearestEnnemy = Helper.findNearest(self.x, self.y, ennemyBuildings)
 
-    def findNearestEnnemy(self, prioritiseUnits = True):
-        ennemys = self.detectEnnemys()
+        # AH-TTACK
+        if nearestEnnemy:
+            self.setAttackTarget(nearestEnnemy)
+            return True
+        else:
+            return False
 
-        # if prioritiseUnits: 
-        #     ennemys.remove(ennemys['batiments'])
 
-        if ennemys['persos'] or ennemys['batiments']:
-            nearestEnnemy = None
-            nearestDist = None
-            dist = None
-                
-            for e in ennemys:
-                if nearestDist == None:
-                    nearestDist = Helper.calcDistance(self.x, self.y, e.x, e.y)
-                    nearestEnnemy = e
-                else:
-                    dist = Helper.calcDistance(self.crd.x, self.crd.y, j.crd.x, j.crd.y)
-                    if  dist < nearestDist:
-                        nearestDist = dist 
-                        nearestTarget = j                      
-            return nearestEnnemy
 
-        
 class Soldat(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
