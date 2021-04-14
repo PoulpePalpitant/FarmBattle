@@ -5,6 +5,7 @@ import random
 from helper import Helper
 from RTS_divers import *
 import math
+from _overlapped import NULL
 
 class DebugSettings(): # Va permettre de dbug bien des affaires
     debugMode = True            
@@ -222,7 +223,7 @@ class Roche(Biotope):
                    'roches5grand']
     def __init__(self,parent,id,monimg,x,y,montype):
         Biotope.__init__(self,parent,id,monimg,x,y,montype)
-        self.valeur=100 
+        self.valeur=random.randrange(20, 100)
                     
 class Arbre(Biotope):
     typeressource=['arbre0grand',
@@ -233,7 +234,7 @@ class Arbre(Biotope):
                    'arbresapin0petit']
     def __init__(self,parent,id,monimg,x,y,montype):
         Biotope.__init__(self,parent,id,monimg,x,y,montype)
-        self.valeur=100 
+        self.valeur=random.randrange(20, 100) 
         
 class Javelot():
     def __init__(self,parent,id,proie):
@@ -291,7 +292,7 @@ class Perso():
         self.y=y
         self.cible=[]
         self.attackTarget=[]
-        self.champvision=100
+        self.champvision=25
         self.vitesse=5
         self.angle=None
 
@@ -426,6 +427,7 @@ class Ouvrier(Perso):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
         self.actioncourante=None
         self.cibleressource=None
+        #self.nextTarget=[]
         self.typeressource=None
         self.quota=20
         self.ramassage=0
@@ -458,8 +460,12 @@ class Ouvrier(Perso):
             if self.cibleressource not in self.parent.parent.ressourcemorte:
                 self.ramasser()
             else:
-                self.actioncourante="retourbatimentmere"
-                self.cibleressource=None
+                nearTarget = self.findNearRessource()
+                if not nearTarget:
+                    self.actioncourante="retourbatimentmere"
+                    self.cibleressource=None
+                else:
+                    self.ramasserressource(nearTarget[0], nearTarget[1])
             
         elif self.actioncourante=="retourbatimentmere":
             self.deplacer()
@@ -491,15 +497,23 @@ class Ouvrier(Perso):
             self.ramassage+=1
             self.cibleressource.valeur-=1
             if self.cibleressource.valeur==0:
-                self.actioncourante="retourbatimentmere"
-                self.cibler([self.batimentmere.x,self.batimentmere.y])
-                self.parent.avertirressourcemort(self.typeressource,self.cibleressource)              
+                self.parent.avertirressourcemort(self.typeressource,self.cibleressource)
+                
             if self.ramassage==self.quota:
                 self.actioncourante="retourbatimentmere"
                 self.cibler([self.batimentmere.x,self.batimentmere.y])
             self.x=self.x+random.randrange(4)-2
             self.y=self.y+random.randrange(4)-2
-                    
+            
+    def findNearRessource(self):
+        for k, bio in self.parent.parent.biotopes.items():
+            if k == self.typeressource:
+                for k2, bio2 in bio.items():
+                    if bio2.x < self.cibleressource.x + self.champvision and bio2.x > self.cibleressource.x - self.champvision and bio2.y < self.cibleressource.y + self.champvision and bio2.y > self.cibleressource.y - self.champvision and self.cibleressource != bio2:
+                        nearTarget = [k, k2]
+                        break
+        return nearTarget
+            
     def deplacer(self):
         if self.cible:
             if self.actioncourante=="ciblerressource" and not self.cibleressource:
@@ -569,11 +583,19 @@ class Ouvrier(Perso):
         self.typeressource=ress.montype
         
     def abandonnerressource(self,ressource):
+        nearTarget = []
         if ressource==self.cibleressource:
-            if self.actioncourante=="ciblerressource" or self.actioncourante=="ramasserresource":
-                self.actioncourante="retourbatimentmere"
-                self.cibler([self.batimentmere.x,self.batimentmere.y])
-            self.cibleressource=None
+            nearTarget = self.findNearRessource()
+            if not nearTarget:
+                if self.actioncourante=="ciblerressource" or self.actioncourante=="ramasserressource":  
+                    self.actioncourante="retourbatimentmere"
+                    self.cibler([self.batimentmere.x,self.batimentmere.y])  
+                self.cibleressource=None
+            else:
+                if self.ramassage == self.quota:
+                    self.cibleressource = self.parent.parent.biotopes[nearTarget[0]][nearTarget[1]]
+                else:
+                    self.ramasserressource(nearTarget[0], nearTarget[1])
     
     ## PAS UTILISER POUR LE MOMENT          
     def scanneralentour(self):
@@ -778,10 +800,10 @@ class Partie():
                            3:["marais",3,8,8,"DarkSeaGreen3"],
                            4:["roche",16,6,3,"gray60"],
                            5:["aureus",12,4,3,"gold2"],}
+        
         self.creerpopulation(mondict,nbrIA)
         self.creerregions()
         self.creerbiotopes()
-        #self.creerpopulation(mondict,nbrIA)
     
     def creerbiotopes(self):
         # creer des daims Ã©parpillÃ©s
@@ -870,43 +892,7 @@ class Partie():
     
     
     
-    def creerregions1(self):
-        for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]     # la clé de région
-            for i in range(reg[1]):
-                listecasereg=[]
-                x=random.randrange(self.taillecarte)
-                y=random.randrange(self.taillecarte)
-                taillex=random.randrange(reg[2])+reg[3]
-                tailley=random.randrange(reg[2])+reg[3]
-                x=x-int(taillex/2)
-                if x<0:
-                    taillex-=x
-                    x=0
-                y=y-int(tailley/2)
-                if y<0:
-                    tailley-=y
-                    y=0
-                x0=x
-                y0=y
-                listereg=[]
-                for i in range(tailley):
-                    for j in range(taillex):
-                        self.cartecase[y][x]
-                        self.cartecase[y][x]=k
-                        listereg.append([x,y])
-                        x+=1
-                        if x>=self.taillecarte:
-                            x=self.taillecarte-1
-                            break
-                    y+=1
-                    x=x0
-                    if y>=self.taillecarte:
-                        y=self.taillecarte-1
-                        break
-                self.regions[reg[0]].append(listereg)   # Assignation de rÃ©gion pour chaque case
-                
-        
+    
     def creerpopulation(self,mondict,nbrIA):
         couleurs=[["R","red"],["B","blue"],["J","yellow"],["V","lightgreen"]]
         quadrants=[[[0,0],[int(self.aireX/2),int(self.aireY/2)]],

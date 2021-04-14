@@ -516,6 +516,7 @@ class Vue():
                     coul=self.modele.joueurs[j].couleur[0]
                     self.canevas.create_image(i.x,i.y,anchor=S,image=self.images[i.image],
                                               tags=(j,k,"artefact","mobile","perso",p))
+                    
                     if k in self.action.persochoisi:
                         self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="yellow",
                                                       tags=(j,k,"artefact","mobile","persochoisi"))
