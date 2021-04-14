@@ -356,7 +356,7 @@ class Perso():
         self.parent=parent
         self.id=id
         self.type = montype
-        self.actioncourante="deplacer"
+        self.actioncourante = None
         self.batimentmere=batiment
         self.dir="D"
         self.image=couleur[0]+"_"+montype+self.dir
@@ -435,10 +435,12 @@ class Perso():
                 
                 self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    # Ajout de la map
 
-                if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
-                    print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
+                # if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
+                #     print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
                 
             if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
+                if self.actioncourante == "deplacer":
+                    self.actioncourante = None
                 self.cible=None 
 
     # Vérifie si la cible est valide pour une attaque. 
@@ -446,6 +448,8 @@ class Perso():
         if cible.parent != self.parent: # SAFETY: Si ennemie    
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
+                self.actioncourante ="attack"
+                
                 return True
         return False
                 
@@ -521,15 +525,12 @@ class Perso():
         tilesAround = self.parent.parent.getOccupiedTilesAround(self.x,self.y,self.champvision)
         
         for t in tilesAround:
-            if t["persos"]: # Ajout de tout les unités ennemies
-                for p in t:
-                    if p.parent != self.parent: # Si ennemie !   
-                        ennemyUnits.append(p)
-
-            if t["batiments"]: # Ajout de tout les batiments ennemis
-                for b in t:
-                    if b.parent != self.parent: # Si ennemie !   
-                        ennemyBuildings.append(b)
+            for p in t["persos"]: # Ajout de tout les unités ennemies
+                if p.parent != self.parent: # Si ennemie !   
+                    ennemyUnits.append(p)
+            for b in t["batiments"]:  # Ajout de tout les batiments ennemis
+                if b.parent != self.parent: # Si ennemie !   
+                    ennemyBuildings.append(b)
 
         if ennemyUnits:
             nearestEnnemy = Helper.findNearest(self.x, self.y, ennemyUnits) # Priorise toujours les unités sur les batiments
@@ -539,6 +540,7 @@ class Perso():
         # AH-TTACK
         if nearestEnnemy:
             self.setAttackTarget(nearestEnnemy)
+            self.cibler([nearestEnnemy.x,nearestEnnemy.y])
             return True
         else:
             return False
@@ -614,7 +616,6 @@ class Pig(Perso):
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
-        self.actioncourante=None
         self.cibleressource=None
         self.typeressource=None
         self.quota=20
@@ -720,8 +721,8 @@ class Ouvrier(Perso):
                 
                 self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    # Ajout sur la map
 
-                if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
-                    print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
+                # if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
+                #     print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
                 
             if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
                 if self.actioncourante=="deplacer":
@@ -911,8 +912,7 @@ class Joueur():
         for u in units:
             for j in self.persos.keys():
                 if u in self.persos[j]:
-                    if self.persos[j][u].setAttackTarget(target):
-                        self.persos[j][u].actioncourante="attack"
+                    self.persos[j][u].setAttackTarget(target) 
                     self.persos[j][u].cibler([target.x,target.y])   #   Même si la target n'est pas valide pour une attaque, les perso vont se déplacer quand même
                     break
 
@@ -1337,8 +1337,6 @@ class Partie():
             casecoiny2 = self.taillecarte-1
 
         distmax = (distanceCase * self.taillecase) + demiCase
-
-        print(self.trouvercase(x,y))
 
         t1=[]
         for i in range(casecoinx1,casecoinx2):
