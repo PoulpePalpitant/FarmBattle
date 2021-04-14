@@ -1261,6 +1261,7 @@ class Partie():
     def findTileInHashMap(self,x,y):
         cx=int(x/self.taillecase) 
         cy=int(y/self.taillecase)
+
         if cx!=0 and x%self.taillecase>0:
             cx+=1
             
@@ -1274,7 +1275,51 @@ class Partie():
             cy-=1
 
         return self.hashmap[cx][cy]
+
+    def getTilesAround(self,x,y,d):
+        cx=int(x/self.taillecase) 
+        cy=int(y/self.taillecase) 
+
+        demiCase = self.taillecase / 2
+
+        # le centre en pixels de la case d'origine
+        pxcentrex=(cx*self.taillecase) + demiCase
+        pxcentrey=(cy*self.taillecase) + demiCase
+        
+        # la case superieur gauche de la case d'origine
+        casecoinx1=cx-d
+        casecoiny1=cy-d
+
+        # assure qu'on deborde pas
+        if casecoinx1<0:
+            casecoinx1=0
+        if casecoiny1<0:
+            casecoiny1=0
+
+        # la case inferieur droite
+        casecoinx2=cx+d
+        casecoiny2=cy+d
+
+        # assure qu'on deborde pas
+        if casecoinx2 >= self.taillecase:
+            casecoinx2 = self.taillecase-1
+        if casecoiny2 >= self.taillecase:
+            casecoiny2 = self.taillecase-1
+
+        distmax=(d*self.taillecase) + demiCase
+        
+        t1=[]
+        for i in range(casecoiny1,casecoiny2):  # Inverser x et y?
+            for j in range(casecoinx1,casecoinx2):
+                case = self.hashmap[i][j]
+                pxcentrecasex=(j * self.taillecase) + demiCase
+                pxcentrecasey=(i * self.taillecase) + demiCase
+                
+                if Helper.withinDistance(pxcentrex,pxcentrey,pxcentrecasex,pxcentrecasey, distmax):
+                    t1.append(case)
+        return t1  
     
+
     def getcartebbox(self,x1,y1,x2,y2):# case d'origine en cx et cy,  pour position pixels x, y
         if x1<0:
             x1=1
