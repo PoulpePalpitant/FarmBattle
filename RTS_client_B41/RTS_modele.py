@@ -69,6 +69,11 @@ class Batiment():
         self.id=id
         self.x=x
         self.y=y
+
+        # S'ajoute sur la map
+        casex2,casey2 = self.parent.parent.trouvercase(x, y)           
+        self.parent.parent.hashmap[casex2][casey2]["batiments"].append(self)    
+
         self.image=None
         self.montype=None
         self.maxperso=0
@@ -87,6 +92,11 @@ class Batiment():
         self.health = 0
         self.parent.addToListOfDeadStuff(False, self.montype, self.id) # S'ajoute à la liste des choses qui sont dead
         #self.parent.avertirressourcemort(self.typeressource,self.cibleressource)              
+        
+        # Retire de la tile map
+        tile = self.parent.parent.trouvercase(self.x, self.y) 
+        if self in self.parent.parent.hashmap[tile[0]][tile[1]]["batiments"]:    # safety measures
+                    self.parent.parent.hashmap[tile[0]][tile[1]]["batiments"].remove(self)    
 
         
 class Maison(Batiment):
@@ -352,6 +362,11 @@ class Perso():
         self.image=couleur[0]+"_"+montype+self.dir
         self.x=x
         self.y=y
+        
+        # S'ajoute sur la map
+        casex2,casey2 = self.parent.parent.trouvercase(x, y)           
+        self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    
+
         self.cible=[]
         self.attackTarget=[]
         self.champvision=100
@@ -412,19 +427,16 @@ class Perso():
             self.x,self.y=x,y # Avance le tit bonhomme. Pourrait sortir de la map je suppose
             
             if casex1 != casex2 or casey1 != casey2: 
-                print(self.parent.parent.hashmap[casex1][casey1])
                 if self in self.parent.parent.hashmap[casex1][casey1]["persos"]:    # safety measures
                     self.parent.parent.hashmap[casex1][casey1]["persos"].remove(self)    
                 
-                
                 self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    # Ajout de la map
-                print(self.parent.parent.hashmap[casex2][casey2])
 
-                if self.parent.parent.cartecase[casex2][casey2]>0:
+                if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
                     print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
                 
-                if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
-                    self.cible=None 
+            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
+                self.cible=None 
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
@@ -480,6 +492,12 @@ class Perso():
         self.attackTarget = None
         self.health = 0
         self.parent.addToListOfDeadStuff(True, self.type, self.id) # S'ajoute à la liste des choses qui sont dead
+
+        # Retire de la tile map
+        tile = self.parent.parent.trouvercase(self.x, self.y) 
+        if self in self.parent.parent.hashmap[tile[0]][tile[1]]["persos"]:    # safety measures
+                    self.parent.parent.hashmap[tile[0]][tile[1]]["persos"].remove(self)    
+
 
     def cibler(self,pos):
         self.cible=pos
@@ -664,32 +682,24 @@ class Ouvrier(Perso):
             if self.actioncourante=="ciblerressource" and not self.cibleressource:
                 self.actioncourante="retourbatimentmere"
                 return
-            x=self.cible[0]
-            y=self.cible[1]
-            ang=Helper.calcAngle(self.x,self.y,x,y)  
-            x1,y1=Helper.getAngledPoint(ang,self.vitesse,self.x,self.y)
-            ######## ICI METTRE TEST PROCHAIN PAS POUR VOIR SI ON PEUT AVANCER 
-            ######## SINON TROUVER VOIE DE CONTOURNEMENT
-            # ici oncalcule sur quelle case on circule
-            casex=x1/self.parent.parent.taillecase
-            if casex!=int(casex):
-                casex=int(casex)+1
-            casey=y1/self.parent.parent.taillecase
-            if casey!=int(casey):
-                casey=int(casey)+1
-            # test si different de 0 (0=plaine), voir Partie pour attribution des valeurs
-            if self.parent.parent.cartecase[int(casey)][int(casex)]>0:
-                # test pour être sur que de n'est 9 (9=batiment)
-                if self.parent.parent.cartecase[int(casey)][int(casex)]<9:
-                    print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[int(casey)][int(casex)]])
-                else:
-                    print("marche dans batiment")
-            ######## FIN DE TEST POUR SURFACE MARCHEE
-            # si tout ba bien on continue avec la nouvelle valeur
-            self.x,self.y=x1,y1 
-            # ici on test pour vori si nous rendu a la cible (en deca de la longueur de notre pas)
-            dist=Helper.calcDistance(self.x,self.y,x,y)
-            if dist <=self.vitesse:
+
+            ang=Helper.calcAngle(self.x,self.y,self.cible[0],self.cible[1])  
+            x,y=Helper.getAngledPoint(ang,self.vitesse,self.x,self.y)
+            
+            casex1,casey1 = self.parent.parent.trouvercase(self.x, self.y) # Case départ
+            casex2,casey2 = self.parent.parent.trouvercase(x, y)           # Case d'arrivé
+            self.x,self.y=x,y # Avance le tit bonhomme. Pourrait sortir de la map je suppose
+            
+            if casex1 != casex2 or casey1 != casey2: 
+                if self in self.parent.parent.hashmap[casex1][casey1]["persos"]:    # safety measures
+                    self.parent.parent.hashmap[casex1][casey1]["persos"].remove(self)    
+                
+                self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    # Ajout sur la map
+
+                if self.parent.parent.cartecase[casex2][casey2]>0:  # Test pour un semblant d'hitbox
+                    print("marche dans ",self.parent.parent.regionstypes[self.parent.parent.cartecase[casex2][casey2]])
+                
+            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.vitesse):    
                 if self.actioncourante=="deplacer":
                     self.actioncourante=None
                     self.cible=None
