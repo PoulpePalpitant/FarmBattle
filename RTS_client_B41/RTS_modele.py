@@ -364,12 +364,12 @@ class Perso():
         self.y=y
         
         # S'ajoute sur la map
-        casex2,casey2 = self.parent.parent.trouvercase(x, y)           
-        self.parent.parent.hashmap[casex2][casey2]["persos"].append(self)    
+        caseX,caseY = self.parent.parent.trouvercase(x, y)           
+        self.parent.parent.hashmap[caseX][caseY]["persos"].append(self)    
 
         self.cible=[]
         self.attackTarget=[]
-        self.champvision=100
+        self.champvision = 200
         self.vitesse=5
         self.angle=None
 
@@ -440,6 +440,7 @@ class Perso():
 
     # Vérifie si la cible est valide pour une attaque. 
     def setAttackTarget(self, cible):        
+        self.detectEnnemys()    # Hey! I'm testing here!   
         if cible.parent != self.parent: # SAFETY: Si ennemie    
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
@@ -511,6 +512,10 @@ class Perso():
         ennemys = []
         ennemyUnits = []
         ennemyBuildings = []
+
+        tilesAround = self.parent.parent.getOccupiedTilesAround(self.x,self.y,self.champvision)
+
+        print(tilesAround)
 
         # Consulte hashmap
         # Pour chacune des tuiles, check si appartient à un autre joueurs
@@ -597,8 +602,8 @@ class Ouvrier(Perso):
         self.ramassage=0
         self.cibletemp=None
         self.dejavisite=[]
-        self.champvision=random.randrange(50)+150
-        self.champchasse=120
+        self.champvision = 150
+        self.champchasse= 120
         self.javelots=[]
         self.vitesse=random.randrange(5)+5
         
@@ -1276,7 +1281,7 @@ class Partie():
 
         return self.hashmap[cx][cy]
 
-    def getTilesAround(self,x,y,d):
+    def getOccupiedTilesAround(self,x,y,d):
         cx=int(x/self.taillecase) 
         cy=int(y/self.taillecase) 
 
@@ -1301,22 +1306,29 @@ class Partie():
         casecoiny2=cy+d
 
         # assure qu'on deborde pas
-        if casecoinx2 >= self.taillecase:
-            casecoinx2 = self.taillecase-1
-        if casecoiny2 >= self.taillecase:
-            casecoiny2 = self.taillecase-1
+        if casecoinx2 >= self.taillecarte:
+            casecoinx2 = self.taillecarte-1
+        if casecoiny2 >= self.taillecarte:
+            casecoiny2 = self.taillecarte-1
 
-        distmax=(d*self.taillecase) + demiCase
-        
+        distmax=(d * self.taillecase) + demiCase
+        caseActuelle = self.trouvercase(x,y)
+        caseActuelle = self.hashmap[caseActuelle[0]][caseActuelle[1]]
+
         t1=[]
-        for i in range(casecoiny1,casecoiny2):  # Inverser x et y?
-            for j in range(casecoinx1,casecoinx2):
+        for i in range(casecoinx1,casecoinx2):
+            for j in range(casecoiny1,casecoiny2): 
                 case = self.hashmap[i][j]
-                pxcentrecasex=(j * self.taillecase) + demiCase
-                pxcentrecasey=(i * self.taillecase) + demiCase
+
+                if caseActuelle == case:
+                    print('wow')
+
+                pxcentrecasex=(i * self.taillecase) + demiCase
+                pxcentrecasey=(j * self.taillecase) + demiCase
                 
                 if Helper.withinDistance(pxcentrex,pxcentrey,pxcentrecasex,pxcentrecasey, distmax):
-                    t1.append(case)
+                    if case["persos"] or case["batiments"]: # Non vide
+                        t1.append(case)
         return t1  
     
 
