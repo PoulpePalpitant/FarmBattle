@@ -21,6 +21,25 @@ class Helper(object):
          return distance
     calcDistance = staticmethod(calcDistance)
 
+    @staticmethod
+    def findNearest(x,y, elementList):   # Les objets doivent avoir des x,y
+        nearestElement = None
+        nearestDist = None
+        dist = None
+            
+        for e in elementList:
+            if nearestElement == None:
+                nearestElement = e
+                nearestDist = Helper.calcDistance(x, y, e.x, e.y)
+            else:
+                dist = Helper.calcDistance(x, y, e.x, e.y)
+                if  dist < nearestDist:
+                    nearestDist = dist 
+                    nearestElement = e                      
+        
+        return nearestElement
+
+    @staticmethod
     def adaptToMaxIndex(number, max):   # Empêche de dépasser l'index maximum d'un array
         if number >= max:
             number = max -1            

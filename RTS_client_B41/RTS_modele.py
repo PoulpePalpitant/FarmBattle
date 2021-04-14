@@ -508,23 +508,53 @@ class Perso():
             self.dir="G"
         self.image=self.image[:-1]+self.dir
 
-    def detectEnnemys(self):
+
+    def targetNearestEnnemy(self):
         ennemys = []
         ennemyUnits = []
         ennemyBuildings = []
 
+        # Consulte hashmap
         tilesAround = self.parent.parent.getOccupiedTilesAround(self.x,self.y,self.champvision)
         
-        print(tilesAround)
+        for t in tilesAround:
+            if t["persos"]: # Ajout de tout les unités ennemies
+                for p in t:
+                    if p.parent != self.parent: # Si ennemie !   
+                        ennemyUnits.append(p)
 
-        # Consulte hashmap
-        # Pour chacune des tuiles, check si appartient à un autre joueurs
-        # Check si unit ou building
-        # Ajoute à liste
+            if t["batiments"]: # Ajout de tout les batiments ennemis
+                for b in t:
+                    if b.parent != self.parent: # Si ennemie !   
+                        ennemyBuildings.append(b)
 
-        ennemys.append(ennemyUnits)         
-        ennemys.append(ennemyBuildings) # On veut les séparés car on veut prioriser les unités sur les buildings
+        # On veut les séparés car on veut prioriser les unités sur les buildings
+        ennemys.append({'persos':ennemyUnits})         
+        ennemys.append({'batiments':ennemyBuildings}) 
         return ennemys
+
+    def findNearestEnnemy(self, prioritiseUnits = True):
+        ennemys = self.detectEnnemys()
+
+        # if prioritiseUnits: 
+        #     ennemys.remove(ennemys['batiments'])
+
+        if ennemys['persos'] or ennemys['batiments']:
+            nearestEnnemy = None
+            nearestDist = None
+            dist = None
+                
+            for e in ennemys:
+                if nearestDist == None:
+                    nearestDist = Helper.calcDistance(self.x, self.y, e.x, e.y)
+                    nearestEnnemy = e
+                else:
+                    dist = Helper.calcDistance(self.crd.x, self.crd.y, j.crd.x, j.crd.y)
+                    if  dist < nearestDist:
+                        nearestDist = dist 
+                        nearestTarget = j                      
+            return nearestEnnemy
+
         
 class Soldat(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
