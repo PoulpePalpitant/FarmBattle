@@ -339,7 +339,8 @@ class Vue():
         if self.parent.nomDuJoueur in mestags:
             if "perso" in mestags:
                 self.action.persochoisi.append(mestags[1])
-                self.action.affichercommandeperso()      
+                self.action.affichercommandeperso()    
+                  
     # Methodes pour multiselect    
     def selectdebuter(self,evt):
         self.debutselect=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
