@@ -222,7 +222,7 @@ class Controleur():
     # generateur de nouveau nom, 
     # peut generer UN NOM EXISTANT mais c'est rare, NON GERER PAR LE SERVEUR        
     def generernom(self): 
-        monnom="JAJA_"+str(random.randrange(100,1000))
+        monnom="JM_"+str(random.randrange(100,1000))
         return monnom
     
     # fonction d'appel normalisee, utiliser par les methodes du controleur qui communiquent avec le serveur

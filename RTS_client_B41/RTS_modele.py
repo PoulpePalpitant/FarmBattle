@@ -6,6 +6,66 @@ from helper import Helper
 from RTS_divers import *
 import math
 
+class DebugSettings(): # Va permettre de dbug bien des affaires
+    debugMode = True            
+    showAttackRange = True      # Indicateur du range d'attack des unités
+    
+    # Settings de lancement de partie
+    spawnPlayersNearby = True   # Spawn tout les joueurs très proche
+    generateAi = True           # Start une game avec des ai (pour l'instant ce sont des joueurs inactifs)
+    createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
+    quickStart = True           # Reset create et launch une partie, immédiatement
+
+class ARMOR_TYPES():
+    LIGHT = 'LIGHT'
+    MEDIUM= 'MEDIUM'
+    HEAVY = 'MEDIUM'
+    SUPRA_HARD = 'SUPRA_HARD'
+
+class SimpleTimer():
+    def __init__(self, parent, interval):
+        self.parent = parent
+        self.interval = interval
+        self.counter = 0
+        self.running = True
+    # Une alternative serait de juste setté un point future, et de checker si on est rendu
+    # AddDelay(time + duration)
+    # tick -> if time >= pointfuture: 
+    #             timer est finit
+
+    def set(self, interval):
+        try :
+            if interval > 0:  # Pas de counter négatif
+                self.counter = 0
+                self.interval = interval
+                self.running = True
+        except ValueError :
+                print("Timer null ou négatif is no bueno")
+    
+    def isRunning(self): 
+        return self.running 
+
+    def tick(self):
+        self.counter += 1 
+
+        if self.counter >= self.interval: 
+            self.running = False
+            return True # Counter finis
+        else:
+            return False
+
+    def start(self):  
+        self.counter = 0
+        self.running = True
+
+    def stop(self): 
+        self.counter = self.interval = 0
+
+
+
+
+
+
 class Batiment():
     def __init__(self,parent,id,x,y):
         self.parent=parent
@@ -14,19 +74,72 @@ class Batiment():
         self.y=y
         self.image=None
         self.montype=None
+        self.populationMax=10
         self.maxperso=0
         self.perso=0
         self.cartebatiment=[]
+
+        # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
+        self.alive = True
+        self.health = 0
+        self.defense = 2+ARMOR_TYPES.HEAVY
+
+    def die(self):
+        self.alive = False
+        self.health = 0
+        self.parent.addToListOfDeadStuff(False, self.montype, self.id) # S'ajoute à la liste des choses qui sont dead
         
-class Maison(Batiment):
+
+#Incomplet pour l'instant
+class ProductionBuilding(Batiment):
+    def __init__(self,id,x,y):
+        self.x = x
+        self.y = y
+        self.id= id
+        
+
+
+class Maison(ProductionBuilding):
     def __init__(self,parent,id,couleur,x,y,montype):
         Batiment.__init__(self,parent,id,x,y)
+        Batiment.populationMax += self.maxperso
         self.image=couleur[0]+"_"+montype
         self.montype=montype
         self.maxperso=10
         self.perso=0
 
-class Abri():
+        # Stats de defenses 
+        self.health = 300
+        self.defense = 3
+        self.armor = ARMOR_TYPES.MEDIUM
+
+class Stable(ProductionBuilding):
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        Batiment.populationMax += self.maxperso
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=5
+        self.perso=0
+
+        # Stats de defenses 
+        self.health = 300
+        self.defense = 2
+        self.armor = ARMOR_TYPES.MEDIUM
+
+class ChickenCoop(ProductionBuilding):
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
+        # Stats de defenses 
+        self.health = 500
+        self.defense = 2
+        self.armor = ARMOR_TYPES.LIGHT
+
+class Barn(ProductionBuilding):
     def __init__(self,parent,id,couleur,x,y,montype):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
@@ -34,14 +147,36 @@ class Abri():
         self.maxperso=20
         self.perso=0
         
-class Caserne():
+        # Stats de defenses 
+        self.health = 300
+        self.defense = 2
+        self.armor = ARMOR_TYPES.HEAVY
+
+class PigHouse(ProductionBuilding):
     def __init__(self,parent,id,couleur,x,y,montype):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
         self.montype=montype
         self.maxperso=20
         self.perso=0
-        
+        # Stats de defenses 
+        self.health = 400
+        self.defense = 2
+        self.armor = ARMOR_TYPES.MEDIUM
+    
+    def createUnit(self,Pig):
+        self.perso += 1
+
+
+
+
+
+
+
+
+
+
+
 class Daim():
     def __init__(self,parent,id,x,y):
         self.parent=parent
@@ -231,7 +366,7 @@ class Javelot():
     def bouger(self): 
         self.x,self.y,=Helper.getAngledPoint(self.ang,self.vitesse,self.x,self.y)
         dist=Helper.calcDistance(self.x,self.y,self.proie.x,self.proie.y)
-        if dist<=self.demitaille:
+        if dist<=self.demitaille:  # 1 shot kill
             # tue daim
             self.parent.actioncourante="ciblerressource"
             self.parent.javelots.remove(self)
@@ -250,6 +385,7 @@ class Perso():
     def __init__(self,parent,id,batiment,couleur,x,y,montype):
         self.parent=parent
         self.id=id
+        self.type = montype
         self.actioncourante="deplacer"
         self.batimentmere=batiment
         self.dir="D"
@@ -257,10 +393,25 @@ class Perso():
         self.x=x
         self.y=y
         self.cible=[]
-        self.mana=100
+        self.attackTarget=[]
         self.champvision=100
         self.vitesse=5
         self.angle=None
+
+        
+
+        # Stats de combats, doivent être spécifié dans les sous-classes
+        self.alive = True
+        self.health = 0
+        self.defense = 0
+        self.atkDmg = 0
+        self.atkRange = 10   # Default pour melee unit
+        self.atkSpeed = 0
+        self.attackTimer = SimpleTimer(self, self.atkSpeed)
+        self.canAttack = True
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.mana=0
+
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
@@ -285,10 +436,60 @@ class Perso():
             
             ####### FIN DE TEST POUR SURFACE MARCHEE
             self.x,self.y=x1,y1 
-            dist=Helper.calcDistance(self.x,self.y,x,y)
-            if dist <=self.vitesse:
-                self.cible=None
+            if Helper.withinDistance(self.x, self.y, x, y, self.vitesse):    
+                self.cible=None # Why?
+
+    # Vérifie si la cible est valide pour une attaque. 
+    def setAttackTarget(self, cible):        
+        if cible.parent != self.parent: # SAFETY: Si ennemie    
+            if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
+                self.attackTarget = cible
+                return True
+        return False
                 
+        
+    def attack(self):        
+        if self.cible and self.attackTarget.alive:    # Cible pas dead
+            if Helper.withinDistance(self.x, self.y, self.cible[0], self.cible[1], self.atkRange):    # Range d'attack
+                if self.canAttack:  # Si le cooldown de l'attaque est terminé
+                    self.attackTarget.health = self.dealDamage(self.attackTarget)
+                    self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer  # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
+                    self.canAttack = False
+                    #self.startNewAttack()# Ici la spécificité de l'attaque peut être déterminé, ex: lance un projectile, swing son arme etc...
+                    
+                if self.attackTarget.health <= 0: # Si la cible meurt ici, faut arrêter de la target
+                    self.attackTarget.die() # et la buter
+                    self.resetAction()
+            else:
+                self.deplacer()
+        else:
+            self.resetAction()
+
+        
+    
+    def dealDamage(self, target):
+        # Check si ya boost de dmg selon le type d'armor et de dmg
+        # ex: if dmgtype = FEU and armor = BOIS
+        # bonusDmg = 0.15
+        # dmg = self.atkDmg + self.atkDmg * bonusDmg
+        dmg = self.atkDmg - target.defense
+
+        if dmg < 1: # Comme dans les autres jeux du genre, le dmg minimum est toujours 1
+            dmg = 1
+
+        return target.health - dmg
+
+    def resetAction(self):
+        self.cible = self.attackTarget = self.actioncourante = None
+
+
+    def die(self):
+        self.alive = False
+        self.cible = None
+        self.attackTarget = None
+        self.health = 0
+        self.parent.addToListOfDeadStuff(True, self.type, self.id) # S'ajoute à la liste des choses qui sont dead
+
     def cibler(self,pos):
         self.cible=pos
         if self.x<self.cible[0]:
@@ -300,15 +501,77 @@ class Perso():
 class Soldat(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 100
+        self.defense = 0
+        self.atkDmg = 6
+        self.atkSpeed = 5
+        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
+    def jouerprochaincoup(self):
+        if self.attackTimer.isRunning():
+            if self.attackTimer.tick():
+                self.canAttack = True
+
+        if self.actioncourante =="deplacer":
+            self.deplacer()
+
+        elif self.actioncourante == "attack":
+            self.attack()
+
+
 class Archer(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 60
+        self.defense = 0
+        self.atkDmg = 8
+        self.atkRange = 30   
+        self.atkSpeed = 7
+
+
 class Chevalier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.HEAVY
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
+
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+
+class Chicken(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 200
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.atkDmg = 15
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
+class Pig(Perso):
+    def __init__(self,parent,id,maison,couleur,x,y,montype):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+        # Stats de combats
+        self.health = 400
+        self.defense = 1
+        self.armorType = ARMOR_TYPES.MEDIUM
+        self.atkDmg = 30
+        self.atkRange = 5   
+        self.atkSpeed = 2
+
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
@@ -324,6 +587,15 @@ class Ouvrier(Perso):
         self.champchasse=120
         self.javelots=[]
         self.vitesse=random.randrange(5)+5
+
+        # Combat stats
+        self.health = 50
+        self.defense = 0
+        self.atkDmg = 2
+        self.atkRange = 0   
+        self.atkSpeed = 5
+        self.attackTimer.set(self.atkSpeed)
+
         
     def jouerprochaincoup(self):
         if self.actioncourante=="deplacer":
@@ -485,7 +757,9 @@ class Joueur():
                    "soldat":Soldat,
                    "archer":Archer,
                    "chevalier":Chevalier,
-                   "druide":Druide}
+                   "druide":Druide,
+                   "chicken":Chicken,
+                   "pig":Pig}
     def __init__(self,parent,id,nom,couleur, x,y):
         self.parent=parent
         self.nom=nom
@@ -495,7 +769,7 @@ class Joueur():
         self.couleur=couleur
         self.monchat=[]
         self.chatneuf=0
-        self.ressourcemorte=[]
+        self.ressourcemorte=[]#
         self.ressources={"nourriture":200,
                          "arbre":200,
                          "roche":200,
@@ -505,11 +779,15 @@ class Joueur():
                     "soldat":{},
                     "archer":{},
                     "chevalier":{},
-                    "druide":{}}
+                    "druide":{},
+                    "chicken":{},
+                    "pig":{}}
         
         self.batiments={"maison":{},
                        "abri":{},
-                       "caserne":{}}
+                       "caserne":{},
+                       "chickenCoop":{},
+                       "pigPen":{}}
         
         self.actions={"creerperso":self.creerperso,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
@@ -517,10 +795,25 @@ class Joueur():
                       "ramasserressource":self.ramasserressource,
                       "chasserressource":self.chasserressource,
                       "construirebatiment":self.construirebatiment,
-                      "chatter":self.chatter}
+                      "chatter":self.chatter,
+                      "setAttackTarget":self.setAttackTarget,
+                      }
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
         
+    def addToListOfDeadStuff(self, isPerso, type, id):
+        if isPerso:
+            self.ressourcemorte.append(self.persos[type][id])
+            del self.persos[type][id]
+        else:
+            self.ressourcemorte.append(self.batiments[type][id])
+            del self.batiments[type][id]
+
+    def sendListOfDeadStuff(self):
+        for i in self.ressourcemorte:
+            self.parent.ressourcemorte.append(i)
+        self.ressourcemorte = []
+
     def chatter(self,param):
         txt,envoyeur,receveur=param
         self.parent.joueurs[envoyeur].monchat.append(txt)
@@ -557,10 +850,41 @@ class Joueur():
                 if i in self.persos[j]:
                     self.persos[j][i].cibler(pos)
                     self.persos[j][i].actioncourante="deplacer"
-           
+
+    # Cible unité ennemie à attaquer
+    def setAttackTarget(self,param):
+        targetId, isPerso, targetType, enemyPlayerName, units = param
+        target = None # Doit trouvé la cible selon l'id fournie
+
+        # Doit chercher la target dans la liste des persos    
+        if isPerso == 'perso':
+            if targetId in self.parent.joueurs[enemyPlayerName].persos[targetType]:
+                target = self.parent.joueurs[enemyPlayerName].persos[targetType][targetId]
+        else:
+            targetType = isPerso # le tag numero [1] devient le targetType dans ce contexte ci, beceause? "Spaghetti"
+            if targetId in self.parent.joueurs[enemyPlayerName].batiments[targetType]: 
+                target = self.parent.joueurs[enemyPlayerName].batiments[targetType][targetId]
+
+        # L'action
+        for u in units:
+            for j in self.persos.keys():
+                if u in self.persos[j]:
+                    if self.persos[j][u].setAttackTarget(target):
+                        self.persos[j][u].actioncourante="attack"
+                    self.persos[j][u].cibler([target.x,target.y])   #   Même si la target n'est pas valide pour une attaque, les perso vont se déplacer quand même
+                    break
+
+    # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
         idmaison=getprochainid()
         self.batiments["maison"][idmaison]=Maison(self,idmaison,self.couleur,x,y,"maison")
+        self.creerperso(["ouvrier","maison",idmaison,[]])
+        
+        # Pour debug plus rapidement
+        if DebugSettings.createAllUnitsAndBuildings:
+            idCaserne = getprochainid()
+            self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
+            self.creerperso(["soldat","caserne",idCaserne,[]])
     
     def construirebatiment(self,param):
         sorte,pos=param
@@ -589,6 +913,9 @@ class Joueur():
         for j in self.persos.keys():
             for i in self.persos[j].keys():
                 self.persos[j][i].jouerprochaincoup()   
+
+        if self.ressourcemorte:
+            self.sendListOfDeadStuff()
                 
     def creerperso(self,param):
         sorteperso,batimentsource,idbatiment,pos=param
@@ -615,12 +942,16 @@ class Partie():
         self.joueurs={}
         self.classesbatiments={"maison":Maison,
                         "caserne":Caserne,
-                        "abri":Abri}
+                        "abri":Abri,
+                        "chickenCoop":ChickenCoop,
+                        "pigPen":PigPen}
         self.classespersos={"ouvrier":Ouvrier,
                     "soldat":Soldat,
                     "archer":Archer,
                     "chevalier":Chevalier,
-                    "druide":Druide}
+                    "druide":Druide,
+                    "chicken":Chicken,
+                    "pig":Pig}
         self.ressourcemorte=[]
         self.listebiotopes=[]
         #self.
@@ -638,9 +969,10 @@ class Partie():
                            3:["marais",3,8,8,"DarkSeaGreen3"],
                            4:["roche",16,6,3,"gray60"],
                            5:["aureus",12,4,3,"gold2"],}
+        self.creerpopulation(mondict,nbrIA)
         self.creerregions()
         self.creerbiotopes()
-        self.creerpopulation(mondict,nbrIA)
+        #self.creerpopulation(mondict,nbrIA)
     
     def creerbiotopes(self):
         # creer des daims éparpillés
@@ -678,10 +1010,60 @@ class Partie():
                 self.biotopes[ressource][id]=(objet)
                 self.listebiotopes.append(objet)
                 nressource-=1
+        
+        
                           
     def creerregions(self):
         for k,reg in self.regionstypes.items():
-            self.regions[reg[0]]=[]     # la clé de région
+            players = []
+            for i in self.joueurs:
+                players.append(i)
+            self.regions[reg[0]]=[]     # la cl� de r�gion
+            for i in range(reg[1]):
+                listecasereg=[]
+                if players.__len__() and (k==1 or k == 4):
+                    playerX = math.floor(self.joueurs.get(players[0]).x/self.taillecase)
+                    playerY = math.floor(self.joueurs.get(players[0]).y/self.taillecase)
+                    x=random.randrange(playerX-20, playerX+20)
+                    y=random.randrange(playerY-20, playerY+20)
+                    players.pop(0)
+                else:
+                    x=random.randrange(self.taillecarte)
+                    y=random.randrange(self.taillecarte)
+                taillex=random.randrange(reg[2])+reg[3]
+                tailley=random.randrange(reg[2])+reg[3]
+                x=x-int(taillex/2)
+                if x<0:
+                    taillex-=x
+                    x=0
+                y=y-int(tailley/2)
+                if y<0:
+                    tailley-=y
+                    y=0
+                x0=x
+                y0=y
+                listereg=[]
+                for i in range(tailley):
+                    for j in range(taillex):
+                        self.cartecase[y][x]
+                        self.cartecase[y][x]=k
+                        listereg.append([x,y])
+                        x+=1
+                        if x>=self.taillecarte:
+                            x=self.taillecarte-1
+                            break
+                    y+=1
+                    x=x0
+                    if y>=self.taillecarte:
+                        y=self.taillecarte-1
+                        break
+                self.regions[reg[0]].append(listereg)   # Assignation de région pour chaque case
+    
+    
+    
+    def creerregions1(self):
+        for k,reg in self.regionstypes.items():
+            self.regions[reg[0]]=[]     # la cl� de r�gion
             for i in range(reg[1]):
                 listecasereg=[]
                 x=random.randrange(self.taillecarte)
@@ -724,6 +1106,12 @@ class Partie():
                    [[int(self.aireX/2),int(self.aireY/2)],[self.aireX,self.aireY]]]
         nquad=4
         bord=50
+
+        for i in range(nbrIA):
+            mondict.append(self.parent.generernom())
+
+        playersToCreate = len(mondict)
+
         for i in mondict:
             id=getprochainid()
             coul=couleurs.pop()
@@ -732,14 +1120,40 @@ class Partie():
             nquad-=1
             quad=quadrants.pop(choixquad)
             
+            locationOccupied = False
+            x = y = 0
+
             n=1
             while n:
-                x=random.randrange(quad[0][0]+bord,quad[1][0]-bord)
-                y=random.randrange(quad[0][1]+bord,quad[1][1]-bord)
+                # DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS DEBUG SETTINGS  DEBUG SETTINGS DEBUG SETTINGS 
+                if DebugSettings.spawnPlayersNearby:
+                    if locationOccupied:    
+                        x += 1  # On pousse vers la droite pour trouver une case non occupés
+                    else:
+                        if playersToCreate == 1: 
+                            x = 1000 
+                            y = 1000
+                        elif playersToCreate == 2:
+                            x = 1500 
+                            y = 1000
+                        elif playersToCreate == 3:
+                            x = 1000 
+                            y = 1300
+                        elif playersToCreate == 4:
+                            x = 1500 
+                            y = 1300
+                else:
+                    # Génère les coordonnées de spawn aléatoire, mais dans un quadrant
+                    x=random.randrange(quad[0][0]+bord,quad[1][0]-bord)
+                    y=random.randrange(quad[0][1]+bord,quad[1][1]-bord)
+
                 case=self.trouvercase(x,y)
-                if self.cartecase[case[1]][case[0]]==0:
+                if self.cartecase[case[1]][case[0]]==0: # Check si la case est occupé par quek chose?
                     self.joueurs[i]=Joueur(self,id,i,coul,x,y)
                     n=0
+                    playersToCreate-=1
+                else:
+                    locationOccupied = True
             
     # Cette methode est une amorce non-fonctionnel a l'IA       
     #def creerIA(self):    
@@ -890,7 +1304,7 @@ class Partie():
                 case=self.carte[i][j]
                 pxcentrecasex=(j*self.taillecase)+self.demicase
                 pxcentrecasey=(i*self.taillecase)+self.demicase
-                distcase=H.calcDistance(pxcentrex,pxcentrey,pxcentrecasex,pxcentrecasey)
+                distcase=Helper.calcDistance(pxcentrex,pxcentrey,pxcentrecasex,pxcentrecasey)
                 if distcase<=distmax:
                     t1.append(case)
         return t1  
@@ -899,6 +1313,8 @@ class Partie():
         self.biotopes[type].pop(ress.id)
         self.ressourcemorte.append(ress)
         
+
+    # C'est ici qu'on reçoit une action.
     #############################################################################    
     # ATTENTION : NE PAS TOUCHER                 
     def ajouteractionsafaire(self,actionsrecues):

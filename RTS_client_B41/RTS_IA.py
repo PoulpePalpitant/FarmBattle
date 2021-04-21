@@ -1,6 +1,11 @@
 
 # CORRECTION REQUISE : cette classe doit etre comlpetemnent revue 
 # La classe IA herite des attributs et methodes mais redefinit les methodes... 
+from RTS_divers import getprochainid
+from RTS_modele import Joueur, Ouvrier
+import random
+
+
 class IA(Joueur):
     def __init__(self,parent,nom,id, x,y):
         Joueur.__init__(self,parent,nom,id,x,y)
