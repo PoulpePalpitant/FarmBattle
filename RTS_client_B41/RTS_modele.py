@@ -6,6 +6,43 @@ from helper import Helper
 from RTS_divers import *
 import math
 
+class UpgradeTest():
+    def __init__(self, param):
+        name, effect, productionTime, cost, prerequisites, img = param    # Les arguments doivent être passé dans cet ordre là
+
+        self.name = name
+        self.effect = effect                    # Effet de l'upgrade sur le joueur/partie
+        self.productionTime = productionTime    # Temps que ça prend pour le faire
+        self.cost = cost                        
+        self.prerequisites = prerequisites      # La liste des upgrades qui doivent être fait pour débloquer celui-ci
+        self.img = img                          # Icone sur le bouton de l'upgrade
+
+class UpgradeRegistry():
+    UPGRADES = {
+        "Test": UpgradeTest(["Test",
+        
+        lambda playerName:              # L'effet de l'upgrade
+            print("A test upgrade. Printing this text"),
+        
+        None,   # Time
+        None,   # Cost
+        None,   # Prerequesite
+        None]),   # Icon
+
+        "Rally": UpgradeTest(["Rally",
+        
+        lambda playerName:              # L'effet de l'upgrade
+            print(playerName),
+        
+        None,   # Time
+        None,   # Cost
+        None,   # Prerequesite
+        None]),   # Icon
+    }
+
+
+
+
 class DebugSettings(): # Va permettre de dbug bien des affaires
     debugMode = True            
     showAttackRange = True      # Indicateur du range d'attack des unités
@@ -803,6 +840,10 @@ class Joueur():
                    "chicken":Chicken,
                    "pig":Pig}
     def __init__(self,parent,id,nom,couleur, x,y):
+
+        self.upgradeTest = UpgradeRegistry.UPGRADES["Test"]
+        self.upgradeTest.effect()
+
         self.parent=parent
         self.nom=nom
         self.id=id
@@ -1303,7 +1344,6 @@ class Partie():
         return self.hashmap[cx][cy]
 
     def getOccupiedTilesAround(self,x,y,distance):
-
         # Distance d serait en case et non en pixel, faut convert je crois
         distanceCase = int (distance / self.taillecase)
         if distanceCase < 1:
