@@ -13,7 +13,7 @@ class DebugSettings(): # Va permettre de dbug bien des affaires
     # Settings de lancement de partie
     spawnPlayersNearby = True   # Spawn tout les joueurs très proche
     generateAi = True           # Start une game avec des ai (pour l'instant ce sont des joueurs inactifs)
-    createAllUnitsAndBuildings = True   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
+    createAllUnitsAndBuildings = False   # Créer tout les bâtiments et unités qui existent lors du lancement du jeu
     quickStart = True           # Reset create et launch une partie, immédiatement
 
 class ARMOR_TYPES():
@@ -449,7 +449,6 @@ class Perso():
             if isinstance(cible, Perso) or isinstance(cible, Batiment): # Si bâtiment || person
                 self.attackTarget = cible
                 self.actioncourante ="attack"
-                
                 return True
         return False
                 
@@ -924,9 +923,12 @@ class Joueur():
         
         # Pour debug plus rapidement
         if DebugSettings.createAllUnitsAndBuildings:
-            idCaserne = getprochainid()
-            self.batiments["caserne"][idCaserne]= Caserne(self,idCaserne ,self.couleur, x + 25 , y - 100,"caserne")    # Peut crash si spawn trop près d'une bordure, probablement
-            self.creerperso(["soldat","caserne",idCaserne,[]])
+            nextId = getprochainid()    # Le bâtiment est invisible, et source de bug 
+            self.batiments["chickenCoop"][nextId]= ChickenCoop(self,nextId ,self.couleur, x + 25 , y - 100,"chickenCoop")    # Peut crash si spawn trop près d'une bordure, probablement
+            self.creerperso(["chicken","chickenCoop",nextId,[]])
+
+            
+        
     
     def construirebatiment(self,param):
         sorte,pos=param
