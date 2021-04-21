@@ -83,7 +83,7 @@ class Daim():
         self.etat="vivant"
         self.x=x
         self.y=y
-        self.valeur=300
+        self.valeur=random.randrange(20, 100)
         self.cible=None
         self.angle=None
         self.dir="GB"
@@ -292,7 +292,7 @@ class Perso():
         self.y=y
         self.cible=[]
         self.attackTarget=[]
-        self.champvision=25
+        self.champvision=100
         self.vitesse=5
         self.angle=None
 
@@ -427,7 +427,6 @@ class Ouvrier(Perso):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
         self.actioncourante=None
         self.cibleressource=None
-        #self.nextTarget=[]
         self.typeressource=None
         self.quota=20
         self.ramassage=0
@@ -437,6 +436,7 @@ class Ouvrier(Perso):
         self.champchasse=120
         self.javelots=[]
         self.vitesse=random.randrange(5)+5
+        self.tickInactive=0
 
         # Combat stats
         self.health = 50
@@ -447,6 +447,13 @@ class Ouvrier(Perso):
 
         
     def jouerprochaincoup(self):
+        if not self.actioncourante:
+            self.tickInactive+=1
+            if self.tickInactive >= 100:
+                self.automaticAction()
+        elif self.tickInactive > 0:
+            self.tickInactive=0
+            
         if self.actioncourante=="deplacer":
             self.deplacer()
         elif self.actioncourante=="ciblerressource":
@@ -483,6 +490,17 @@ class Ouvrier(Perso):
         elif self.actioncourante=="attendrejavelot":
             for i in self.javelots:
                 i.bouger()
+                
+    def automaticAction(self):
+        for k, bio in self.parent.parent.biotopes.items():
+            if k != "eau" or k != "marais":
+                for k2, bio2 in bio.items():
+                    if bio2.x < self.x + self.champvision and bio2.x > self.x - self.champvision and bio2.y < self.y + self.champvision and bio2.y > self.y - self.champvision:
+                        if k == "daim":
+                            self.chasserressource(k, k2, bio2)
+                        else:
+                            self.ramasserressource(k, k2)
+                        return
             
     def lancerjavelot(self,proie):
         if self.javelots==[]:
@@ -499,7 +517,7 @@ class Ouvrier(Perso):
             if self.cibleressource.valeur==0:
                 self.parent.avertirressourcemort(self.typeressource,self.cibleressource)
                 
-            if self.ramassage==self.quota:
+            if self.ramassage >= self.quota:
                 self.actioncourante="retourbatimentmere"
                 self.cibler([self.batimentmere.x,self.batimentmere.y])
             self.x=self.x+random.randrange(4)-2
@@ -507,12 +525,11 @@ class Ouvrier(Perso):
             
     def findNearRessource(self):
         for k, bio in self.parent.parent.biotopes.items():
-            if k == self.typeressource:
+            if k == self.typeressource and k != "daim":
                 for k2, bio2 in bio.items():
                     if bio2.x < self.cibleressource.x + self.champvision and bio2.x > self.cibleressource.x - self.champvision and bio2.y < self.cibleressource.y + self.champvision and bio2.y > self.cibleressource.y - self.champvision and self.cibleressource != bio2:
                         nearTarget = [k, k2]
-                        break
-        return nearTarget
+                        return nearTarget
             
     def deplacer(self):
         if self.cible:
@@ -564,6 +581,7 @@ class Ouvrier(Perso):
                     else:
                         self.typeressource=None
                         self.cible=None
+                        self.actioncourante=None
                         
     def chasserressource(self,typeress,id,proie):
         if proie.etat=="vivant":
@@ -583,7 +601,6 @@ class Ouvrier(Perso):
         self.typeressource=ress.montype
         
     def abandonnerressource(self,ressource):
-        nearTarget = []
         if ressource==self.cibleressource:
             nearTarget = self.findNearRessource()
             if not nearTarget:
@@ -592,7 +609,7 @@ class Ouvrier(Perso):
                     self.cibler([self.batimentmere.x,self.batimentmere.y])  
                 self.cibleressource=None
             else:
-                if self.ramassage == self.quota:
+                if self.ramassage >= self.quota:
                     self.cibleressource = self.parent.parent.biotopes[nearTarget[0]][nearTarget[1]]
                 else:
                     self.ramasserressource(nearTarget[0], nearTarget[1])
