@@ -3,7 +3,7 @@
 # --------------------------------
 class UpgradeTest():
     def __init__(self, param):
-        name, description, productionTime, cost, prerequisites, img = param    # Les arguments doivent être passé dans cet ordre là
+        name, description, productionTime, cost, prerequisites, img = param    # Les arguments doivent être passés dans cet ordre là
 
         self.name = name
         self.description = description

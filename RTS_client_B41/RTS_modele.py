@@ -6,8 +6,18 @@ from helper import Helper
 from RTS_divers import *
 import math
 
-
-
+# Pour tester
+class CombatStats(): # Stats de combats, doivent être spécifié dans les sous-classes
+    def __init__(self):
+        self.health = 0
+        self.defense = 0
+        self.atkDmg = 0
+        self.atkRange = 10   # Default pour melee unit
+        self.atkSpeed = 0    # Nombre de ticks par attaque
+        self.attackTimer = SimpleTimer(self, self.atkSpeed)
+        self.canAttack = True
+        self.armorType = ARMOR_TYPES.LIGHT
+        self.mana=0
 
 
 class DebugSettings(): # Va permettre de dbug bien des affaires
@@ -591,6 +601,7 @@ class Druide(Perso):
 class Chicken(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+       
         # Stats de combats
         self.health = 200
         self.defense = 1
@@ -625,8 +636,8 @@ class Ouvrier(Perso):
         self.dejavisite=[]
         self.champvision = 150
         self.champchasse= 120
-        self.javelots=[]
         self.vitesse=random.randrange(5)+5
+        self.javelots=[]
         
         # Actions supplémentaires
         self.actions["gather"] = self.ramasserressource
@@ -843,14 +854,10 @@ class Joueur():
                       "chatter":self.chatter,
                       "setAttackTarget":self.setAttackTarget,
                       }
+
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
-
-        # upgradeTest = UpgradeRegistry.UPGRADES["Protein shakes"]
-        # upgradeTest.effect(self)
-        # self.completedUpgrades = {"Protein shakes": upgradeTest}
-        # print(self.completedUpgrades)
-
+        self.completedUpgrades = {}     # ex : {"Protein shakes": ProteinShake}
         
     def addToListOfDeadStuff(self, isPerso, type, id):
         if isPerso:
