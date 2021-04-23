@@ -575,7 +575,12 @@ class Soldat(Perso):
             self.defense = 0
             self.atkDmg = 6
             self.atkSpeed = 5
-            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Soldat(parent,id,batiment,couleur,x,y,montype, prototype)
 
 class Archer(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
@@ -589,7 +594,13 @@ class Archer(Perso):
             self.defense = 0
             self.atkRange = 30   
             self.atkSpeed = 7
-            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Archer(parent,id,batiment,couleur,x,y,montype, prototype)
+
 
 class Chevalier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype, prototype = None):
@@ -604,11 +615,22 @@ class Chevalier(Perso):
             self.armorType = ARMOR_TYPES.HEAVY
             self.atkDmg = 15
             self.atkSpeed = 2
-            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Chevalier(parent,id,batiment,couleur,x,y,montype, prototype)
 
 class Druide(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Druide(parent,id,batiment,couleur,x,y,montype, prototype)
 
 class Chicken(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
@@ -624,8 +646,12 @@ class Chicken(Perso):
             self.atkDmg = 15
             self.atkRange = 200   
             self.atkSpeed = 10
-            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Chicken(parent,id,batiment,couleur,x,y,montype, prototype)
 
 class Pig(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
@@ -641,8 +667,14 @@ class Pig(Perso):
             self.armorType = ARMOR_TYPES.HEAVY
             self.atkDmg = 30
             self.atkSpeed = 2
-            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):       
+        return Pig(parent,id,batiment,couleur,x,y,montype, prototype)
 
                
 class Ouvrier(Perso):
