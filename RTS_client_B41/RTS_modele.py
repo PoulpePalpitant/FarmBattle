@@ -355,59 +355,60 @@ class Javelot():
                 self.parent.actioncourante="ciblerproie"       
                   
 class Perso():    
-    def __init__(self,parent,id,batiment,couleur,x,y,montype):
-        self.parent=parent
-        self.id=id
-        self.type = montype
-        self.actioncourante = None
-        self.batimentmere=batiment
-        self.dir="D"
-        self.image=couleur[0]+"_"+montype+self.dir
-        self.x=x
-        self.y=y
-        
-        # S'ajoute sur la map
-        caseX,caseY = self.parent.parent.trouvercase(x, y)           
-        self.parent.parent.hashmap[caseX][caseY]["persos"].append(self)    
+    def __init__(self,parent,id,batiment,couleur,x,y,montype, cloningPrototype = True):
+        if cloningPrototype:   # Si on clone pas, on créer un prototype. Le prototype n'existeras pas dans le jeu, il n'aura donc pas besoins de ces attributs
+            self.parent=parent
+            self.id=id
+            self.type = montype
+            self.actioncourante = None
+            self.batimentmere=batiment
+            self.dir="D"
+            self.image=couleur[0]+"_"+montype+self.dir
+            self.x=x
+            self.y=y
+            
+            # S'ajoute sur la map
+            caseX,caseY = self.parent.parent.trouvercase(x, y)           
+            self.parent.parent.hashmap[caseX][caseY]["persos"].append(self)    
 
-        self.cible=[]
-        self.attackTarget=[]
-        self.angle=None
+            self.alive = True
+            self.cible=[]
+            self.canAttack = True
+            self.attackTarget=[]
+            self.angle=None
 
-        # Stats de combats, doivent être spécifié dans les sous-classes
-        self.alive = True
-        self.health = 0
-        self.defense = 0
-        self.vitesse = 5
-        self.champvision = 200
-        self.atkDmg = 0
-        self.atkRange = 10   # Default pour melee unit
-        self.atkSpeed = 0    # Nombre de ticks par attaque
-        self.attackTimer = SimpleTimer(self, self.atkSpeed)
-        self.canAttack = True
-        self.armorType = ARMOR_TYPES.LIGHT
-        self.mana=0
-        
-        self.actions = {
-                      "deplacer":self.deplacer,
-                      "setAttackTarget":self.setAttackTarget,
-                      "attack": self.attack,
-                      }
+            self.actions = {
+                "deplacer":self.deplacer,
+                "setAttackTarget":self.setAttackTarget,
+                "attack": self.attack,
+                }
 
+        else: # Le prototype de base va avoir ces stats. Tout les clones vont copier les attributs du prototype
+            self.health = 0
+            self.defense = 0
+            self.vitesse = 5
+            self.champvision = 200
+            self.atkDmg = 0
+            self.atkRange = 10   # Default pour melee unit
+            self.atkSpeed = 0    # Nombre de ticks par attaque
+            self.attackTimer = None
+            self.armorType = ARMOR_TYPES.LIGHT
+            self.mana=0
+            
     def clone():     # Abstract
         return
 
-    def copyAttributes(prototype):  # MUST BE TESTED
+    def copyAttributes(self, prototype):  # MUST BE TESTED
         self.health = prototype.health
-        self.defense = prototype
-        self.vitesse = prototype
-        self.champvision = prototype
-        self.atkDmg = prototype
-        self.atkRange = prototype
-        self.atkSpeed = prototype
-        self.attackTimer.set(prototype.attackTimer.interval)  
+        self.defense = prototype.defense
+        self.vitesse = prototype.vitesse
+        self.champvision = prototype.champvision
+        self.atkDmg = prototype.atkDmg
+        self.atkRange = prototype.atkRange
+        self.atkSpeed = prototype.atkSpeed
+        self.attackTimer = SimpleTimer(self, self.atkSpeed)
         self.armorType = prototype.armorType
-        self.mana= prototype.mana
+        self.mana = prototype.mana
 
 #---- Si on revampe tout l'AI, on passe par ici
 
@@ -563,101 +564,122 @@ class Perso():
 
 
 class Soldat(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+    def __init__(self,parent,id,maison,couleur,x,y,montype, prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
         
-        # Stats de combats
-        self.health = 100
-        self.defense = 0
-        self.atkDmg = 6
-        self.atkSpeed = 5
-        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de combats
+            self.health = 100
+            self.defense = 0
+            self.atkDmg = 6
+            self.atkSpeed = 5
+            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 class Archer(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+    def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
         
-        # Stats de combats
-        self.health = 60
-        self.defense = 0
-        self.atkRange = 30   
-        self.atkSpeed = 7
-        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de combats
+            self.health = 60
+            self.defense = 0
+            self.atkRange = 30   
+            self.atkSpeed = 7
+            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 class Chevalier(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+    def __init__(self,parent,id,maison,couleur,x,y,montype, prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
         
-        # Stats de combats
-        self.health = 200
-        self.defense = 1
-        self.armorType = ARMOR_TYPES.HEAVY
-        self.atkDmg = 15
-        self.atkSpeed = 2
-        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de combats
+            self.health = 200
+            self.defense = 1
+            self.armorType = ARMOR_TYPES.HEAVY
+            self.atkDmg = 15
+            self.atkSpeed = 2
+            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 class Druide(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+    def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
 
 class Chicken(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
+    def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
        
-        # Stats de combats
-        self.health = 200
-        self.defense = 1
-        self.armorType = ARMOR_TYPES.LIGHT
-        self.atkDmg = 15
-        self.atkRange = 200   
-        self.atkSpeed = 10
-        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de combats
+            self.health = 200
+            self.defense = 1
+            self.armorType = ARMOR_TYPES.LIGHT
+            self.atkDmg = 15
+            self.atkRange = 200   
+            self.atkSpeed = 10
+            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 
 class Pig(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
-        # Stats de combats
-        self.health = 400
-        self.defense = 1
-        self.armorType = ARMOR_TYPES.HEAVY
-        self.atkDmg = 30
-        self.atkSpeed = 2
-        self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
+    def __init__(self,parent,id,maison,couleur,x,y,montype,prototype = None):
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
+        
+        
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de combats
+            self.health = 400
+            self.defense = 1
+            self.armorType = ARMOR_TYPES.HEAVY
+            self.atkDmg = 30
+            self.atkSpeed = 2
+            self.attackTimer.set(self.atkSpeed) # Obligatoire si unité peut attaquer
 
 
                
 class Ouvrier(Perso):
     def __init__(self,parent,id,maison,couleur,x,y,montype, prototype = None):
-        Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
-        self.cibleressource=None
-        self.typeressource=None
-        self.cibletemp=None
-        self.javelots=[]
-        self.ramassage=0
+        Perso.__init__(self,parent,id,maison,couleur,x,y,montype, prototype)
 
         if prototype:
             self.copyAttributes(prototype)
-        else:
-            self.quota=20 # Stats uniques aux ouvriers
-            self.champchasse= 120
+            
+            self.cibleressource=None
+            self.typeressource=None
+            self.cibletemp=None
+            self.javelots=[]
+            self.ramassage=0
 
-            # Combat stats
+            # Actions supplémentaires
+            self.actions["gather"] = self.ramasserressource
+            self.actions["hunt"] = self.chasserressource
+            #self.actions["build"] = self.build
+
+        else:
+            # Stats du prototype de base
             self.vitesse = 5
             self.health = 50
             self.defense = 0
             self.atkDmg = 2
             self.atkSpeed = 5
             self.champvision = 150
-            self.attackTimer.set(self.atkSpeed)
 
-        # Actions supplémentaires
-        self.actions["gather"] = self.ramasserressource
-        self.actions["hunt"] = self.chasserressource
-        #self.actions["build"] = self.build
+            # Attributs uniques aux ouvriers
+            self.quota=20 
+            self.champchasse= 120
 
-    def copyAttributes(prototype):
-        super.copyAttributes(prototype)
+
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
 
         self.quota = prototype.quota 
         self.champchasse = prototype.champchasse
@@ -854,6 +876,14 @@ class Joueur():
                     "chicken":{},
                     "pig":{}}
         
+        self.prototypePersos={"ouvrier": self.classespersos["ouvrier"](None, None, None,None,None,None,None,None), #none! yep, overloading stuff would prevent that.
+                    "soldat":self.classespersos["soldat"](None, None, None,None,None,None,None,None),
+                    "archer":self.classespersos["archer"](None, None, None,None,None,None,None,None),
+                    "chevalier":self.classespersos["chevalier"](None, None, None,None,None,None,None,None),
+                    "druide":self.classespersos["druide"](None, None, None,None,None,None,None,None),
+                    "chicken":self.classespersos["chicken"](None, None, None,None,None,None,None,None),
+                    "pig":self.classespersos["pig"](None, None, None,None,None,None,None,None)}
+
         self.batiments={"maison":{},
                        "abri":{},
                        "caserne":{},
@@ -1000,7 +1030,10 @@ class Joueur():
         x=batiment.x+100+(random.randrange(50)-15)
         y=batiment.y +(random.randrange(50)-15)
             
-        self.persos[sorteperso][id]=Joueur.classespersos[sorteperso](self,id,batiment,self.couleur,x,y,sorteperso)
+        #if sorteperso == "ouvrier":
+        self.persos[sorteperso][id]=Joueur.classespersos[sorteperso].clone(self,id,batiment,self.couleur,x,y,sorteperso, self.prototypePersos[sorteperso])
+        #else:    
+        #    self.persos[sorteperso][id]=Joueur.classespersos[sorteperso](self,id,batiment,self.couleur,x,y,sorteperso)
 
 #######################  LE MODELE est la partie #######################
 class Partie():
