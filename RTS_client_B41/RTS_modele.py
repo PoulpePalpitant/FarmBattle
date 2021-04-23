@@ -2,23 +2,10 @@
 
 import ast
 import random
+import math
 from helper import Helper
 from RTS_divers import *
-import math
-
-# Pour tester
-class CombatStats(): # Stats de combats, doivent être spécifié dans les sous-classes
-    def __init__(self):
-        self.health = 0
-        self.defense = 0
-        self.atkDmg = 0
-        self.atkRange = 10   # Default pour melee unit
-        self.atkSpeed = 0    # Nombre de ticks par attaque
-        self.attackTimer = SimpleTimer(self, self.atkSpeed)
-        self.canAttack = True
-        self.armorType = ARMOR_TYPES.LIGHT
-        self.mana=0
-
+from RTS_upgrades import *
 
 class DebugSettings(): # Va permettre de dbug bien des affaires
     debugMode = True            
@@ -90,16 +77,18 @@ class Batiment():
 
         self.image=None
         self.montype=None
-        self.maxperso=0
-        self.perso=0
         self.cartebatiment=[]
 
         # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
         self.alive = True
         self.health = 0
         self.defense = 2
-
+        self.maxperso=0
+        self.perso=0
         self.armorType = ARMOR_TYPES.HEAVY
+
+    def clone():     # Abstract
+        return
 
     def die(self):
         self.alive = False
@@ -383,20 +372,14 @@ class Perso():
 
         self.cible=[]
         self.attackTarget=[]
-        self.champvision = 200
-        self.vitesse=5
         self.angle=None
-
-        self.actions = {
-                      "deplacer":self.deplacer,
-                      "setAttackTarget":self.setAttackTarget,
-                      "attack": self.attack,
-                      }
 
         # Stats de combats, doivent être spécifié dans les sous-classes
         self.alive = True
         self.health = 0
         self.defense = 0
+        self.vitesse = 5
+        self.champvision = 200
         self.atkDmg = 0
         self.atkRange = 10   # Default pour melee unit
         self.atkSpeed = 0    # Nombre de ticks par attaque
@@ -404,8 +387,27 @@ class Perso():
         self.canAttack = True
         self.armorType = ARMOR_TYPES.LIGHT
         self.mana=0
+        
+        self.actions = {
+                      "deplacer":self.deplacer,
+                      "setAttackTarget":self.setAttackTarget,
+                      "attack": self.attack,
+                      }
 
+    def clone():     # Abstract
+        return
 
+    def copyAttributes(prototype):  # MUST BE TESTED
+        self.health = prototype.health
+        self.defense = prototype
+        self.vitesse = prototype
+        self.champvision = prototype
+        self.atkDmg = prototype
+        self.atkRange = prototype
+        self.atkSpeed = prototype
+        self.attackTimer.set(prototype.attackTimer.interval)  
+        self.armorType = prototype.armorType
+        self.mana= prototype.mana
 
 #---- Si on revampe tout l'AI, on passe par ici
 
@@ -626,31 +628,44 @@ class Pig(Perso):
 
                
 class Ouvrier(Perso):
-    def __init__(self,parent,id,maison,couleur,x,y,montype):
+    def __init__(self,parent,id,maison,couleur,x,y,montype, prototype = None):
         Perso.__init__(self,parent,id,maison,couleur,x,y,montype)
         self.cibleressource=None
         self.typeressource=None
-        self.quota=20
-        self.ramassage=0
         self.cibletemp=None
-        self.dejavisite=[]
-        self.champvision = 150
-        self.champchasse= 120
-        self.vitesse=random.randrange(5)+5
         self.javelots=[]
-        
+        self.ramassage=0
+
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            self.quota=20 # Stats uniques aux ouvriers
+            self.champchasse= 120
+
+            # Combat stats
+            self.vitesse = 5
+            self.health = 50
+            self.defense = 0
+            self.atkDmg = 2
+            self.atkSpeed = 5
+            self.champvision = 150
+            self.attackTimer.set(self.atkSpeed)
+
         # Actions supplémentaires
         self.actions["gather"] = self.ramasserressource
         self.actions["hunt"] = self.chasserressource
         #self.actions["build"] = self.build
 
-        # Combat stats
-        self.health = 50
-        self.defense = 0
-        self.atkDmg = 2
-        self.atkSpeed = 5
-        self.attackTimer.set(self.atkSpeed)
-        
+    def copyAttributes(prototype):
+        super.copyAttributes(prototype)
+
+        self.quota = prototype.quota 
+        self.champchasse = prototype.champchasse
+
+
+    def clone(parent,id,batiment,couleur,x,y,montype, prototype):        # Retourne une copie de soi-même
+        return Ouvrier(parent,id,batiment,couleur,x,y,montype, prototype)
+
     def jouerprochaincoup(self):
         if self.attackTimer.isRunning():
             if self.attackTimer.tick():

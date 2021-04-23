@@ -36,6 +36,10 @@ class ProteinShake():
         slaveList = player.persos['ouvrier']
         for slave in slaveList: 
             slaveList[slave].quota += slaveList[slave].quota / 2
+            #self.addUpgrade(slaveList[slave])  # On sait que l'unité à cette upgrade
+
+    def addUpgrade(self, unit): # Effet de l'upgrade sur le joueur/partie
+        unit.upgrades.push(self.name)
         
 
 # Registre qui contient une instance de chaque upgrade
