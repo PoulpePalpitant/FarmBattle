@@ -8,6 +8,7 @@ from helper import Helper
 from RTS_divers import *
 from RTS_vue import *
 from RTS_modele import *
+from RTS_upgrades import *
 
 """
 Application client RTS, base sur le modele approximatif d'Age of Empire I
