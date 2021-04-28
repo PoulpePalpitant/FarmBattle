@@ -103,19 +103,29 @@ class Batiment():
 
         
 class Maison(Batiment):
-    def __init__(self,parent,id,couleur,x,y,montype):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
         Batiment.__init__(self,parent,id,x,y)
-        self.image=couleur[0]+"_"+montype
-        self.montype=montype
-        self.maxperso=10
-        self.perso=0
 
-        # Stats de defenses 
-        self.health = 300
-        self.defense = 2
+        if prototype:
+            self.copyAttributes(prototype)
+            self.image=couleur[0]+"_"+montype
+            self.montype=montype
+            self.maxperso=10
+            self.perso=0
+        else:
+            # Stats de defenses 
+            self.health = 300
+            self.defense = 2
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,couleur,x,y,montype, prototype):       
+        return Batiment(parent,id,couleur,x,y,montype, prototype)
+
 
 class Abri():
-    def __init__(self,parent,id,couleur,x,y,montype):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
         self.montype=montype
@@ -127,7 +137,7 @@ class Abri():
         self.defense = 2
         
 class Caserne():
-    def __init__(self,parent,id,couleur,x,y,montype):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
         self.montype=montype
@@ -135,7 +145,7 @@ class Caserne():
         self.perso=0
 
 class ChickenCoop():
-    def __init__(self,parent,id,couleur,x,y,montype):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
         self.montype=montype
@@ -146,7 +156,7 @@ class ChickenCoop():
         self.defense = 2
 
 class PigPen():
-    def __init__(self,parent,id,couleur,x,y,montype):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
         Batiment.__init__(self,parent,id,x,y)
         self.image=couleur[0]+"_"+montype
         self.montype=montype
@@ -908,13 +918,19 @@ class Joueur():
                     "chicken":{},
                     "pig":{}}
         
-        self.prototypePersos={"ouvrier": self.classespersos["ouvrier"](None, None, None,None,None,None,None,None), #none! yep, overloading stuff would prevent that.
+        self.prototypePersos={"ouvrier": self.classespersos["ouvrier"](None, None, None,None,None,None,None,None), #none! yep, overloading constructor would prevent that.
                     "soldat":self.classespersos["soldat"](None, None, None,None,None,None,None,None),
                     "archer":self.classespersos["archer"](None, None, None,None,None,None,None,None),
                     "chevalier":self.classespersos["chevalier"](None, None, None,None,None,None,None,None),
                     "druide":self.classespersos["druide"](None, None, None,None,None,None,None,None),
                     "chicken":self.classespersos["chicken"](None, None, None,None,None,None,None,None),
                     "pig":self.classespersos["pig"](None, None, None,None,None,None,None,None)}
+
+        self.prototypeBatiments={"maison": self.parent.classesbatiments["maison"](None, None, None,None,None,None,None,None), 
+                    # "caserne":self.parent.classesbatiments["caserne"](None, None, None,None,None,None,None,None),
+                    # "abri":self.parent.classesbatiments["abri"](None, None, None,None,None,None,None,None),
+                    # "chickenCoop":self.parent.classesbatiments["chickenCoop"](None, None, None,None,None,None,None,None),
+                    # "pigPen":self.parent.classesbatiments["pigPen"](None, None, None,None,None,None,None,None)}
 
         self.batiments={"maison":{},
                        "abri":{},
