@@ -65,27 +65,37 @@ class SimpleTimer():
 
 
 class Batiment():
-    def __init__(self,parent,id,x,y):
-        self.parent=parent
-        self.id=id
-        self.x=x
-        self.y=y
+    def __init__(self,parent,id, couleur,x,y,montype, cloningPrototype = True):
+        if cloningPrototype:
+            self.parent=parent
+            self.id=id
+            self.x=x
+            self.y=y
 
-        # S'ajoute sur la map
-        casex2,casey2 = self.parent.parent.trouvercase(x, y)           
-        self.parent.parent.hashmap[casex2][casey2]["batiments"].append(self)    
+            # S'ajoute sur la map
+            casex2,casey2 = self.parent.parent.trouvercase(x, y)           
+            self.parent.parent.hashmap[casex2][casey2]["batiments"].append(self)    
 
-        self.image=None
-        self.montype=None
-        self.cartebatiment=[]
+            self.montype=montype
+            self.image=couleur[0]+"_"+montype
 
-        # Stats de defenses des bâtiments, doivent être spécifié dans les sous-classes
-        self.alive = True
-        self.health = 0
-        self.defense = 2
-        self.maxperso=0
-        self.perso=0
-        self.armorType = ARMOR_TYPES.HEAVY
+            self.cartebatiment=[]
+            self.alive = True
+        else:
+            # Le prototype de base va avoir ces stats. Tout les clones vont copier les attributs du prototype de bases
+            self.health = 0
+            self.defense = 2
+            self.maxperso=0
+            self.perso=0
+            self.armorType = ARMOR_TYPES.HEAVY
+
+    def copyAttributes(self, prototype):  
+        self.health = prototype.health
+        self.defense = prototype.defense
+        self.armorType = prototype.armorType
+        self.maxperso = prototype.maxperso
+        self.perso = prototype.perso
+
 
     def clone():     # Abstract
         return
@@ -104,67 +114,105 @@ class Batiment():
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
-        Batiment.__init__(self,parent,id,x,y)
+        Batiment.__init__(self,parent,id, couleur,x, y, montype, prototype)
 
         if prototype:
             self.copyAttributes(prototype)
-            self.image=couleur[0]+"_"+montype
-            self.montype=montype
-            self.maxperso=10
-            self.perso=0
         else:
             # Stats de defenses 
             self.health = 300
             self.defense = 2
+            self.maxperso=10    # useless for now
+            self.perso=0        # useless for now
 
     def copyAttributes(self, prototype):
         super().copyAttributes(prototype)
 
     def clone(parent,id,couleur,x,y,montype, prototype):       
-        return Batiment(parent,id,couleur,x,y,montype, prototype)
+        return Maison(parent,id,couleur,x,y,montype, prototype)
 
 
-class Abri():
+class Abri(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
-        Batiment.__init__(self,parent,id,x,y)
-        self.image=couleur[0]+"_"+montype
-        self.montype=montype
-        self.maxperso=20
-        self.perso=0
+        Batiment.__init__(self,parent,id, couleur, x, y, montype, prototype)
+
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de defenses 
+            self.health = 300
+            self.defense = 2
+            self.maxperso=20
+            self.perso=0
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,couleur,x,y,montype, prototype):       
+        return Abri(parent,id,couleur,x,y,montype, prototype)
         
-        # Stats de defenses 
-        self.health = 300
-        self.defense = 2
+class Caserne(Batiment):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
+        Batiment.__init__(self,parent,id, couleur, x, y, montype, prototype)
+
+
+        if prototype:
+            self.copyAttributes(prototype)
+        else:
+            # Stats de defenses 
+            self.health = 300
+            self.defense = 2
+            self.maxperso=20
+            self.perso=0
+
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,couleur,x,y,montype, prototype):       
+        return Caserne(parent,id,couleur,x,y,montype, prototype)
+
+class ChickenCoop(Batiment):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
+        Batiment.__init__(self,parent,id, couleur,x, y, montype, prototype)
+
+        if prototype:
+            self.copyAttributes(prototype)
+
+            self.maxperso=20
+            self.perso=0
+        else:
+            # Stats de defenses 
+            self.health = 500
+            self.defense = 2
+
+    def copyAttributes(self, prototype):
+        print(super())
+        print(super)
+
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,couleur,x,y,montype, prototype):       
+        return ChickenCoop(parent,id,couleur,x,y,montype, prototype)
+
+class PigPen(Batiment):
+    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
+        Batiment.__init__(self,parent,id, couleur,x, y, montype, prototype)
         
-class Caserne():
-    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
-        Batiment.__init__(self,parent,id,x,y)
-        self.image=couleur[0]+"_"+montype
-        self.montype=montype
-        self.maxperso=20
-        self.perso=0
+        if prototype:
+            self.copyAttributes(prototype)
 
-class ChickenCoop():
-    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
-        Batiment.__init__(self,parent,id,x,y)
-        self.image=couleur[0]+"_"+montype
-        self.montype=montype
-        self.maxperso=20
-        self.perso=0
-        # Stats de defenses 
-        self.health = 500
-        self.defense = 2
+        else:
+            # Stats de defenses 
+            self.health = 500
+            self.defense = 2
+            self.maxperso=20
+            self.perso=0
 
-class PigPen():
-    def __init__(self,parent,id,couleur,x,y,montype, prototype = None):
-        Batiment.__init__(self,parent,id,x,y)
-        self.image=couleur[0]+"_"+montype
-        self.montype=montype
-        self.maxperso=20
-        self.perso=0
-        # Stats de defenses 
-        self.health = 500
-        self.defense = 2
+    def copyAttributes(self, prototype):
+        super().copyAttributes(prototype)
+
+    def clone(parent,id,couleur,x,y,montype, prototype):       
+        return PigPen(parent,id,couleur,x,y,montype, prototype)
         
 class Daim():
     def __init__(self,parent,id,x,y):
@@ -718,8 +766,6 @@ class Ouvrier(Perso):
             self.quota=20 
             self.champchasse= 120
 
-
-
     def copyAttributes(self, prototype):
         super().copyAttributes(prototype)
 
@@ -926,11 +972,12 @@ class Joueur():
                     "chicken":self.classespersos["chicken"](None, None, None,None,None,None,None,None),
                     "pig":self.classespersos["pig"](None, None, None,None,None,None,None,None)}
 
-        self.prototypeBatiments={"maison": self.parent.classesbatiments["maison"](None, None, None,None,None,None,None,None), 
-                    # "caserne":self.parent.classesbatiments["caserne"](None, None, None,None,None,None,None,None),
-                    # "abri":self.parent.classesbatiments["abri"](None, None, None,None,None,None,None,None),
-                    # "chickenCoop":self.parent.classesbatiments["chickenCoop"](None, None, None,None,None,None,None,None),
-                    # "pigPen":self.parent.classesbatiments["pigPen"](None, None, None,None,None,None,None,None)}
+        self.prototypeBatiments={"maison": self.parent.classesbatiments["maison"](None, None, None,None,None,None,None), 
+                    "caserne":self.parent.classesbatiments["caserne"](None, None, None,None,None,None,None),
+                    "abri":self.parent.classesbatiments["abri"](None, None, None,None,None,None,None),
+                    "chickenCoop":self.parent.classesbatiments["chickenCoop"](None, None, None,None,None,None,None),
+                    "pigPen":self.parent.classesbatiments["pigPen"](None, None, None,None,None,None,None)
+                    }
 
         self.batiments={"maison":{},
                        "abri":{},
@@ -1027,7 +1074,7 @@ class Joueur():
     # Ajouter les unités et bâtiments qu'on veut à l'initialisation ici   
     def creerpointdorigine(self,x,y):
         idmaison=getprochainid()
-        self.batiments["maison"][idmaison]=Maison(self,idmaison,self.couleur,x,y,"maison")
+        self.batiments["maison"][idmaison]=Maison(self,idmaison,self.couleur,x,y,"maison",self.prototypeBatiments["maison"])
         self.creerperso(["ouvrier","maison",idmaison,[]])
         
         # Pour debug plus rapidement
@@ -1042,7 +1089,9 @@ class Joueur():
     def construirebatiment(self,param):
         sorte,pos=param
         id=getprochainid()
-        self.batiments[sorte][id]=self.parent.classesbatiments[sorte](self,id,self.couleur,pos[0],pos[1],sorte)
+        
+        self.batiments[sorte][id]=self.parent.classesbatiments[sorte](self,id,self.couleur,pos[0],pos[1],sorte, self.prototypeBatiments[sorte])
+        # self.batiments[sorte][id]=self.parent.classesbatiments[sorte](self,id,self.couleur,pos[0],pos[1],sorte)
         batiment=self.batiments[sorte][id]
         
         
