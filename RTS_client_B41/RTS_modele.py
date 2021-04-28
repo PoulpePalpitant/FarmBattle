@@ -694,6 +694,7 @@ class Ouvrier(Perso):
             # Actions supplémentaires
             self.actions["gather"] = self.ramasserressource
             self.actions["hunt"] = self.chasserressource
+            self.tickInactive=0
             #self.actions["build"] = self.build
 
         else:
@@ -709,7 +710,7 @@ class Ouvrier(Perso):
             self.quota=20 
             self.champchasse= 120
             self.dejavisite=[]
-            self.tickInactive=0
+            
 
             
     def copyAttributes(self, prototype):
