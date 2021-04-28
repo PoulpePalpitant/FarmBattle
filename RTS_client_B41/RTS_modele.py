@@ -998,6 +998,7 @@ class Joueur():
         # on va creer une maison comme centre pour le joueur
         self.creerpointdorigine(x,y)
         self.completedUpgrades = {}     # ex : {"Protein shakes": ProteinShake}
+        UpgradeRegistry.UPGRADES["Defense Tier 3"].effect(self)
         
     def addToListOfDeadStuff(self, isPerso, type, id):
         if isPerso:
