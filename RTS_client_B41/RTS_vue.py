@@ -50,7 +50,7 @@ class Vue():
         coul=self.modele.joueurs[self.parent.nomDuJoueur].couleur
         self.cadrejeuinfo.config(bg=coul[1])
         self.creeraide()
-        self.creercadreouvrier(coul[0]+"_",["maison","caserne","chickenCoop","pigPen"])
+        self.creercadreouvrier(coul[0]+"_",["maison","caserne","chickenCoop","pigPen","field"])
         self.creerchatter()
         # on affiche les maisons, point de depart des divers joueurs
         self.afficherdepart()
@@ -75,7 +75,7 @@ class Vue():
         self.cadreouvrier=Frame(self.cadreaction)
         for i in artefact:
             btn=Button(self.cadreouvrier,text=i,image=self.images[coul+i])
-            btn.bind("<Button>",self.batirartefact)
+            tag.bind("<Button-2>",self.selectBuilding)
             btn.pack()    
              
 ###### LES CADRES ############################################################################################        
@@ -306,6 +306,7 @@ class Vue():
         self.canevas.tag_bind("roche","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("baie","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("daim","<Button-3>",self.chasserressource)
+        self.canevas.tag_bind("building","<Button-2>",self.selectBuilding)
     
     # cette méthode sert à changer le cadre (Frame) actif de la fenêtre, on n'a qu'à fournir le cadre requis
     def changercadre(self,nomcadre):
@@ -367,6 +368,20 @@ class Vue():
             self.canevas.delete("selecteur")
     ### FIN du multiselect
                 
+    def cultivatefield(self,evt):
+        tag=self.canevas.gettags(CURRENT)
+        if tag[0]=="" and self.action.persochoisi:
+            self.action.cultivatefield(tag)
+        else:
+            print(tag[3])
+
+    def selectBuilding(self,evt):
+        tag=self.canevas.gettags(CURRENT)
+        if tag[0]=="" and self.action.selectBuilding:
+            self.action.selectBuilding(tag)
+        else:
+            print(tag[3])
+        
     def ramasserressource(self,evt):
         tag=self.canevas.gettags(CURRENT)
         if tag[0]=="" and self.action.persochoisi:
@@ -631,6 +646,11 @@ class Action():
         if self.persochoisi:
             action=[self.parent.parent.nomDuJoueur,"ramasserressource",[tag[3],tag[1],self.persochoisi]]
             self.parent.parent.actionsrequises=action
+
+    def cultivatefield(self,tag):
+        if self.persochoisi:
+            action=[self.parent.parent.nomDuJoueur,"cultivatefield",[tag[3],tag[1],self.persochoisi]]
+            self.parent.parent.actionsrequises=action
             
     def construirebatiment(self,pos):
         self.btnactif.config(bg="SystemButtonFace")
@@ -685,4 +705,3 @@ class Champ(Label):
         Label.__init__(self,master,*args, **kwargs)
         self.config(font=("arial",13,"bold"))
         self.config(bg="goldenrod3")
-
