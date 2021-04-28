@@ -92,6 +92,18 @@ class PigPen():
         # Stats de defenses 
         self.health = 500
         self.defense = 2
+
+class Field():
+    def __init__(self,parent,id,couleur,x,y,montype):
+        Batiment.__init__(self,parent,id,x,y)
+        self.image=couleur[0]+"_"+montype
+        self.montype=montype
+        self.maxperso=20
+        self.perso=0
+        self.quantite = 5000 #Pour la quantité de ressources dans le field
+        self.health = 200
+        self.defense = 2
+
         
 class Daim():
     def __init__(self,parent,id,x,y):
@@ -675,7 +687,8 @@ class Joueur():
                        "abri":{},
                        "caserne":{},
                        "chickenCoop":{},
-                       "pigPen":{}}
+                       "pigPen":{},
+                       "field":{}}
         
         self.actions={"creerperso":self.creerperso,
                       "ouvrierciblermaison":self.ouvrierciblermaison,
@@ -804,7 +817,8 @@ class Partie():
                         "caserne":Caserne,
                         "abri":Abri,
                         "chickenCoop":ChickenCoop,
-                        "pigPen":PigPen}
+                        "pigPen":PigPen,
+                        "field":Field}
         self.classespersos={"ouvrier":Ouvrier,
                     "soldat":Soldat,
                     "archer":Archer,
