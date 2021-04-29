@@ -50,7 +50,7 @@ class Vue():
         coul=self.modele.joueurs[self.parent.nomDuJoueur].couleur
         self.cadrejeuinfo.config(bg=coul[1])
         self.creeraide()
-        self.creercadreouvrier(coul[0]+"_",["maison","caserne"])
+        self.creercadreouvrier(coul[0]+"_",["maison","caserne","chickenCoop","pigPen"])
         self.creerchatter()
         # on affiche les maisons, point de depart des divers joueurs
         self.afficherdepart()
@@ -301,6 +301,10 @@ class Vue():
         # sinon on spécifie un tag particulier, exemple avec divers tag, attaché par divers événements
         self.canevas.tag_bind("batiment","<Button-1>",self.creerentite)
         self.canevas.tag_bind("perso","<Button-1>",self.ajoutselection)
+
+        self.canevas.tag_bind("perso","<Button-3>",self.setAttackTarget)
+        self.canevas.tag_bind("batiment","<Button-3>",self.setAttackTarget)
+
         self.canevas.tag_bind("arbre","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("aureus","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("roche","<Button-3>",self.ramasserressource)
@@ -335,7 +339,8 @@ class Vue():
         if self.parent.nomDuJoueur in mestags:
             if "perso" in mestags:
                 self.action.persochoisi.append(mestags[1])
-                self.action.affichercommandeperso()      
+                self.action.affichercommandeperso()    
+                  
     # Methodes pour multiselect    
     def selectdebuter(self,evt):
         self.debutselect=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
@@ -387,6 +392,15 @@ class Vue():
             x,y=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
             self.action.position=[x,y]
             self.action.deplacer()
+
+    def setAttackTarget(self,evt):
+        tag=self.canevas.gettags(CURRENT)
+
+        if not tag:
+            print(tag[3])
+        else:
+            if self.nomDuJoueur != tag[0]:  # Si Ennemie
+                self.action.setAttackTarget(tag)
             
     # Cette fonction permet se se deplacer via un click sur la minicarte
     def deplacercarte(self,evt):
@@ -430,6 +444,13 @@ class Vue():
             if "caserne" in mestags:
                 pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
                 action=[self.parent.nomDuJoueur,"creerperso",["soldat",mestags[4],mestags[1],pos]]
+            if "chickenCoop" in mestags:
+                pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
+                action=[self.parent.nomDuJoueur,"creerperso",["chicken",mestags[4],mestags[1],pos]]
+            if "pigPen" in mestags:
+                pos=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
+                action=[self.parent.nomDuJoueur,"creerperso",["pig",mestags[4],mestags[1],pos]]
+                
             self.parent.actionsrequises=action
            
     ##FONCTIONS D'AFFICHAGES##################################        
@@ -516,6 +537,7 @@ class Vue():
                     coul=self.modele.joueurs[j].couleur[0]
                     self.canevas.create_image(i.x,i.y,anchor=S,image=self.images[i.image],
                                               tags=(j,k,"artefact","mobile","perso",p))
+                    
                     if k in self.action.persochoisi:
                         self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="yellow",
                                                       tags=(j,k,"artefact","mobile","persochoisi"))
@@ -613,6 +635,14 @@ class Action():
     def deplacer(self):
         if self.persochoisi:
             action=[self.parent.parent.nomDuJoueur,"deplacer",[self.position,self.persochoisi]]
+            self.parent.parent.actionsrequises=action
+
+    def setAttackTarget(self,tag):
+        # Pour target, voici les tags nécessaires:
+        # targetId, isPerso, targetType, enemyPlayerName, self.persochoisi 
+
+        if self.persochoisi:
+            action=[self.parent.parent.nomDuJoueur,"setAttackTarget",[tag[1],tag[4], tag[5], tag[0], self.persochoisi]]
             self.parent.parent.actionsrequises=action
     
     def chasserressource(self,tag):

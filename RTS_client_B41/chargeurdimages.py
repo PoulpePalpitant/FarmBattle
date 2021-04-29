@@ -119,7 +119,32 @@ def chargerimages():
             'V_ouvrierD':PhotoImage(file='./images/vert/V_ouvrierD.png'),
             'V_ouvrierG':PhotoImage(file='./images/vert/V_ouvrierG.png'),
             'V_soldatD':PhotoImage(file='./images/vert/V_soldatD.png'),
-            'V_soldatG':PhotoImage(file='./images/vert/V_soldatG.png')}
+            'V_soldatG':PhotoImage(file='./images/vert/V_soldatG.png'),
+            'V_chickenD':PhotoImage(file='./images/vert/V_chickenD.png'),
+            'V_chickenG':PhotoImage(file='./images/vert/V_chickenG.png'),
+            'J_chickenD':PhotoImage(file='./images/jaune/J_chickenD.png'),
+            'J_chickenG':PhotoImage(file='./images/jaune/J_chickenG.png'),
+            'B_chickenD':PhotoImage(file='./images/bleu/B_chickenD.png'),
+            'B_chickenG':PhotoImage(file='./images/bleu/B_chickenG.png'),
+            'R_chickenD':PhotoImage(file='./images/rouge/R_chickenD.png'),
+            'R_chickenG':PhotoImage(file='./images/rouge/R_chickenG.png'),
+            'V_chickenCoop':PhotoImage(file='./images/vert/V_chickenCoop.png'),
+            'J_chickenCoop':PhotoImage(file='./images/jaune/J_chickenCoop.png'),
+            'B_chickenCoop':PhotoImage(file='./images/bleu/B_chickenCoop.png'),
+            'R_chickenCoop':PhotoImage(file='./images/rouge/R_chickenCoop.png'),
+            'V_pigPen':PhotoImage(file='./images/vert/V_pigPen.png'),
+            'B_pigPen':PhotoImage(file='./images/bleu/B_pigPen.png'),
+            'J_pigPen':PhotoImage(file='./images/jaune/J_pigPen.png'),
+            'R_pigPen':PhotoImage(file='./images/rouge/R_pigPen.png'),
+            'V_pigD':PhotoImage(file='./images/vert/V_pigD.png'),
+            'V_pigG':PhotoImage(file='./images/vert/V_pigG.png'),
+            'B_pigD':PhotoImage(file='./images/bleu/B_pigD.png'),
+            'B_pigG':PhotoImage(file='./images/bleu/B_pigG.png'),
+            'J_pigD':PhotoImage(file='./images/jaune/J_pigD.png'),
+            'J_pigG':PhotoImage(file='./images/jaune/J_pigG.png'),
+            'R_pigD':PhotoImage(file='./images/rouge/R_pigD.png'),
+            'R_pigG':PhotoImage(file='./images/rouge/R_pigG.png')
+            }
     return images
 
 
