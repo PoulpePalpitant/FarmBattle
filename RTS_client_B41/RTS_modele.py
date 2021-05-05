@@ -427,6 +427,8 @@ class Perso():
             self.x=x
             self.y=y
             
+            self.movingIn = False
+            
             # S'ajoute sur la map
             caseX,caseY = self.parent.parent.trouvercase(x, y)           
             self.parent.parent.hashmap[caseX][caseY]["persos"].append(self)    
@@ -500,7 +502,7 @@ class Perso():
                 self.targetNearestEnnemy()
             
     def deplacer(self):
-        if self.cible:
+        if self.cible and self.movingIn:
             ang=Helper.calcAngle(self.x,self.y,self.cible[0],self.cible[1])  
             x,y=Helper.getAngledPoint(ang,self.vitesse,self.x,self.y)
             
@@ -535,7 +537,7 @@ class Perso():
     def attack(self):        
         if self.attackTarget and self.attackTarget.alive:    # Cible pas dead
             if Helper.withinDistance(self.x, self.y, self.attackTarget.x, self.attackTarget.y, self.atkRange):    # Range d'attack
-                self.cible = None   # Arrêt du mouvement si peut attaquer à distance
+                self.movingIn = False   # Arrêt du mouvement si peut attaquer à distance
                 if self.canAttack:  # Si le cooldown de l'attaque est terminé
                     self.attackTarget.health = self.dealDamage(self.attackTarget)
                     self.attackTimer.set(self.atkSpeed) # Start cooldown pour prochaine attaque quand même. Tuer une cible ne reset pas le cooldown d'attaque
@@ -547,7 +549,10 @@ class Perso():
                     self.resetAction()
                     
                 return
-            
+            else:
+                if self.movingIn == False:
+                    self.movingIn = True
+                        
             if self.cible == None:
                 self.cibler([self.attackTarget.x, self.attackTarget.y])
         else:
@@ -568,6 +573,7 @@ class Perso():
         return target.health - dmg
 
     def resetAction(self):
+        self.movingIn = False
         self.cible = self.attackTarget = self.actioncourante = None
 
 
@@ -591,6 +597,8 @@ class Perso():
         else:
             self.dir="G"
         self.image=self.image[:-1]+self.dir
+
+        self.movingIn = True
 
 
     # Une autre méthodes pourrait être intégré pour prioriser les ennemies les plus 'dangereux', au besoin
