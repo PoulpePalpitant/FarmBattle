@@ -87,7 +87,8 @@ class Controleur():
             return "impossible"
     
     # a partir du splash, permet de creer une partie (lance le lobby pour permettre a d'autres joueurs de se connecter)
-    # l'argument valciv n'est pas utilise pour l'INSTANT, elle sert de recette pour envoyer des parameters lors de la demande de creation d'une partie
+    # l'argument valciv n'est pas utilise pour l'INSTANT, elle sert de recette pour envoyer d
+    # es parameters lors de la demande de creation d'une partie
     # on pourrait ainsi deja fournir des options de jeu
     def creerpartie(self,nom,urljeu,valciv):
         if self.prochainsplash:

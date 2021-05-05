@@ -540,13 +540,11 @@ class Vue():
                     
                     # Ceci est l'endroit ou l'affichage des healthbar à lieu
                     if k in self.action.persochoisi:
-                        # self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="black",tags=(j,k,"artefact","mobile","persochoisi"))
-                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 10, i.y + 10  ,fill="green",tags=(j,k,"artefact","mobile","persochoisi"))
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="black",tags=(j,k,"artefact","mobile","persochoisi"))
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 20 - 10, i.y + 10  ,fill="green",tags=(j,k,"artefact","mobile","persochoisi"))
                     else:
-                        if i.health < 0:
-                            print("test")
                         self.canevas.create_rectangle(i.x-10,i.y+5,i.x + 10,i.y+10,fill="black",tags=(j,k,"artefact","mobile","persochoisi"))
-                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 10, i.y + 10 ,fill="yellow",tags=(j,k,"artefact","mobile","persochoisi"))
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 20 - 10, i.y + 10 ,fill="yellow",tags=(j,k,"artefact","mobile","persochoisi"))
                         
                     # dessiner javelot de l'ouvrier
                     if p=="ouvrier":
@@ -559,10 +557,10 @@ class Vue():
                     i = self.modele.joueurs[j].batiments[k][l]
                     if i in self.action.persochoisi:
                         self.canevas.create_rectangle(i.x-10,i.y+25,i.x+10,i.y+30,fill="black",tags=(j,k,"artefact","mobile"))
-                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 10, i.y +30  ,fill="green",tags=(j,k,"artefact","mobile"))
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 20 - 10, i.y +30  ,fill="green",tags=(j,k,"artefact","mobile"))
                     else:
                         self.canevas.create_rectangle(i.x-10,i.y+25,i.x+10,i.y + 30,fill="black",tags=(j,k,"artefact","mobile"))
-                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 10, i.y +30 ,fill="yellow",tags=(j,k,"artefact","mobile"))
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 20 - 10, i.y +30 ,fill="yellow",tags=(j,k,"artefact","mobile"))
 
         # ajuster les choses vivantes dependantes de la partie (mais pas des joueurs) 
         for j in self.modele.biotopes["daim"].keys():
