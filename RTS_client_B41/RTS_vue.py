@@ -15,6 +15,7 @@ class Vue():
         self.cadrechaton=0
         self.textchat=""
         self.infohud={}
+        self.changeSiloLoyalty = 0
         # sera charge apres l'initialisation de la partie, contient les donnees pour mettre l'interface a jour
         self.modele=None
         # variable pour suivre le trave du multiselect
@@ -310,6 +311,8 @@ class Vue():
         self.canevas.tag_bind("roche","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("baie","<Button-3>",self.ramasserressource)
         self.canevas.tag_bind("daim","<Button-3>",self.chasserressource)
+        
+        self.canevas.tag_bind("silo","<Button-3>",self.indiquerposition)
     
     # cette méthode sert à changer le cadre (Frame) actif de la fenêtre, on n'a qu'à fournir le cadre requis
     def changercadre(self,nomcadre):
@@ -388,7 +391,7 @@ class Vue():
                                     
     def indiquerposition(self,evt):
         tag=self.canevas.gettags(CURRENT)
-        if not tag:
+        if not tag or "silo" in tag:
             x,y=(self.canevas.canvasx(evt.x),self.canevas.canvasy(evt.y))
             self.action.position=[x,y]
             self.action.deplacer()
@@ -399,7 +402,7 @@ class Vue():
         if not tag:
             print(tag[3])
         else:
-            if self.nomDuJoueur != tag[0]:  # Si Ennemie
+            if self.nomDuJoueur != tag[0] and "silo" not in tag:  # Si Ennemie
                 self.action.setAttackTarget(tag)
             
     # Cette fonction permet se se deplacer via un click sur la minicarte
@@ -493,6 +496,14 @@ class Vue():
                 x1=int((m.x/self.modele.aireX)*self.tailleminicarte)
                 y1=int((m.y/self.modele.aireY)*self.tailleminicarte)
                 self.minicarte.create_rectangle(x1-2,y1-2,x1+2,y1+2,fill=coul,tags=(j,m.id,"artefact","maison"))
+                
+        silo = self.modele.silo
+        #afficher vision silo
+        #self.canevas.create_oval(silo.x-silo.vision, silo.y-silo.vision, silo.x+silo.vision, silo.y+silo.vision, outline="MediumPurple4", width=2)
+        self.canevas.create_image(silo.x,silo.y,image=self.images[silo.image],tags=(silo.id,"artefact","batiment","silo"))
+        x1=int((silo.x/self.modele.aireX)*self.tailleminicarte)
+        y1=int((silo.y/self.modele.aireY)*self.tailleminicarte)
+        self.minicarte.create_rectangle(x1-2,y1-2,x1+2,y1+2,fill="MediumPurple4",tags=(silo.id,"artefact","silo"))
     
     def afficherbio(self,bio):
         self.canevas.create_image(bio.x,bio.y,image=self.images[bio.img],
@@ -572,6 +583,14 @@ class Vue():
             if self.modele.joueurs[self.parent.nomDuJoueur].chatneuf and self.action.chaton==0:
                 self.btnchat.config(bg="orange")
             self.modele.joueurs[self.parent.nomDuJoueur].chatneuf=0
+            
+        if self.changeSiloLoyalty:
+            self.canevas.delete("silo")
+            
+            silo = self.modele.silo
+            self.canevas.create_image(silo.x,silo.y,image=self.images[silo.image],tags=(silo.id,"artefact","batiment","silo"))
+            self.changeSiloLoyalty = 0
+            
                 
     ###  METHODES POUR SPLASH ET LOBBY INSCRIPTION pour participer a une partie
     def updatesplash(self,etat):

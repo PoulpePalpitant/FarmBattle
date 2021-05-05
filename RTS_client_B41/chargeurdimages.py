@@ -143,8 +143,12 @@ def chargerimages():
             'J_pigD':PhotoImage(file='./images/jaune/J_pigD.png'),
             'J_pigG':PhotoImage(file='./images/jaune/J_pigG.png'),
             'R_pigD':PhotoImage(file='./images/rouge/R_pigD.png'),
-            'R_pigG':PhotoImage(file='./images/rouge/R_pigG.png')
-            }
+            'R_pigG':PhotoImage(file='./images/rouge/R_pigG.png'),
+            'silo':PhotoImage(file='./images/xxxbatiment/silo.png'),
+            'B_silo':PhotoImage(file='./images/xxxbatiment/B_silo.png'),
+            'J_silo':PhotoImage(file='./images/xxxbatiment/J_silo.png'),
+            'R_silo':PhotoImage(file='./images/xxxbatiment/R_silo.png'),
+            'V_silo':PhotoImage(file='./images/xxxbatiment/V_silo.png')}
     return images
 
 

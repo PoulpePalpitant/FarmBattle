@@ -102,6 +102,59 @@ class Batiment():
         if self in self.parent.parent.hashmap[tile[0]][tile[1]]["batiments"]:    # safety measures
                     self.parent.parent.hashmap[tile[0]][tile[1]]["batiments"].remove(self)    
 
+class Silo():
+    def __init__(self,parent,id,x,y,type):
+        self.parent = parent
+        self.id = id
+        self.x = x
+        self.y = y
+        self.type = type
+        self.image = type
+        self.loyalty = None
+        self.vision = 150
+        self.unitsNear = []
+        self.timer = SimpleTimer(self, 15)
+
+    def ajustLoyalty(self):
+        player0 = 0
+        player1 = 0
+        player2 = 0
+        player3 = 0
+        playersKeys = list(self.parent.joueurs.keys())
+        currentloyalty = self.loyalty
+        
+        
+        for unit in self.unitsNear:
+            if unit.parent == self.parent.joueurs[playersKeys[0]]:
+                player0+=1
+            elif unit.parent == self.parent.joueurs[playersKeys[1]]:
+                player1+=1
+            elif unit.parent == self.parent.joueurs[playersKeys[2]]:
+                player2+=1
+            elif unit.parent == self.parent.joueurs[playersKeys[3]]:
+                player3+=1
+        
+        if player0 > player1 and player0 > player2 and player0 > player3:
+            self.loyalty = self.parent.joueurs[playersKeys[0]]
+        elif player1 > player0 and player1 > player2 and player1 > player3:
+            self.loyalty = self.parent.joueurs[playersKeys[1]]
+        elif player2 > player0 and player2 > player1 and player2 > player3:
+            self.loyalty = self.parent.joueurs[playersKeys[2]]
+        elif player3 > player0 and player3 > player1 and player3 > player2:
+            self.loyalty = self.parent.joueurs[playersKeys[3]]
+            
+        if currentloyalty != self.loyalty:
+            self.image = self.loyalty.couleur[0]+"_silo"
+            self.parent.parent.ajustSiloLoyalty()
+            
+    def jouerProchainCoup(self):
+        if self.loyalty:
+            if self.timer.tick():
+                self.loyalty.ressources["nourriture"]+=1
+                self.loyalty.ressources["arbre"]+=1
+                self.loyalty.ressources["roche"]+=1
+                self.loyalty.ressources["aureus"]+=1
+                self.timer.start()
         
 class Maison(Batiment):
     def __init__(self,parent,id,couleur,x,y,montype):
@@ -437,6 +490,17 @@ class Perso():
         else:
             if self.actioncourante == None:
                 self.targetNearestEnnemy()
+
+                
+    def checkSilo(self):
+        if Helper.calcDistance(self.x,self.y,self.parent.parent.silo.x,self.parent.parent.silo.y) <= self.parent.parent.silo.vision:
+            if self not in self.parent.parent.silo.unitsNear:
+                self.parent.parent.silo.unitsNear.append(self)
+                self.parent.parent.silo.ajustLoyalty()
+        else:
+            if self in self.parent.parent.silo.unitsNear:
+                self.parent.parent.silo.unitsNear.remove(self)
+                self.parent.parent.silo.ajustLoyalty()
             
     def deplacer(self):
         if self.cible:
@@ -708,8 +772,8 @@ class Ouvrier(Perso):
             # Attributs uniques aux ouvriers
             self.quota=20 
             self.champchasse= 120
-            self.dejavisite=[]
-            self.tickInactive=0
+            
+        self.tickInactive=0
 
             
     def copyAttributes(self, prototype):
@@ -776,7 +840,7 @@ class Ouvrier(Perso):
                 
     def automaticAction(self):
         for k, bio in self.parent.parent.biotopes.items():
-            if k != "eau" or k != "marais":
+            if k != "eau" and k != "marais":
                 for k2, bio2 in bio.items():
                     if bio2.x < self.x + self.champvision and bio2.x > self.x - self.champvision and bio2.y < self.y + self.champvision and bio2.y > self.y - self.champvision:
                         if k == "daim":
@@ -1089,6 +1153,7 @@ class Joueur():
         for j in self.persos.keys():
             for i in self.persos[j].keys():
                 self.persos[j][i].jouerprochaincoup()   
+                self.persos[j][i].checkSilo()
 
         if self.ressourcemorte:
             self.sendListOfDeadStuff()
@@ -1150,6 +1215,7 @@ class Partie():
                            3:["marais",3,8,8,"DarkSeaGreen3"],
                            4:["roche",16,6,3,"gray60"],
                            5:["aureus",12,4,3,"gold2"],}
+        self.silo=None
         
         self.creerpopulation(mondict,nbrIA)
         self.creerregions()
@@ -1296,6 +1362,9 @@ class Partie():
                     playersToCreate-=1
                 else:
                     locationOccupied = True
+                    
+        id=getprochainid()
+        self.silo=Silo(self,id,self.aireX/2,self.aireY/2,"silo")
             
     def deplacer(self):
         for i in self.joueurs:
@@ -1318,6 +1387,8 @@ class Partie():
         # demander aux objets de s'activer
         for i in self.joueurs.keys():
             self.joueurs[i].jouerprochaincoup()
+        
+        self.silo.jouerProchainCoup()
             
         self.faireactionpartie()
         
