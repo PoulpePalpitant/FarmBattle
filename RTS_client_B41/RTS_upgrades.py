@@ -92,7 +92,6 @@ class SuperPigs():
     def effect(self, player): 
         return
         # Remplace le choix de production des pigs en super pigs, dans tout les pigpen du joueur
-        
         # . . .
 
         # Copie les pigs et créer des super pigs identiques        

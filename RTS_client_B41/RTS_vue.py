@@ -538,16 +538,32 @@ class Vue():
                     self.canevas.create_image(i.x,i.y,anchor=S,image=self.images[i.image],
                                               tags=(j,k,"artefact","mobile","perso",p))
                     
+                    # Ceci est l'endroit ou l'affichage des healthbar à lieu
                     if k in self.action.persochoisi:
-                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="yellow",
-                                                      tags=(j,k,"artefact","mobile","persochoisi"))
+                        # self.canevas.create_rectangle(i.x-10,i.y+5,i.x+10,i.y+10,fill="black",tags=(j,k,"artefact","mobile","persochoisi"))
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 10, i.y + 10  ,fill="green",tags=(j,k,"artefact","mobile","persochoisi"))
+                    else:
+                        if i.health < 0:
+                            print("test")
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + 10,i.y+10,fill="black",tags=(j,k,"artefact","mobile","persochoisi"))
+                        self.canevas.create_rectangle(i.x-10,i.y+5,i.x + (i.health / i.maxHealth) * 10, i.y + 10 ,fill="yellow",tags=(j,k,"artefact","mobile","persochoisi"))
                         
                     # dessiner javelot de l'ouvrier
                     if p=="ouvrier":
                         for b in self.modele.joueurs[j].persos[p][k].javelots:
-                            self.canevas.create_image(b.x,b.y,image=self.images[b.image],
-                                              tags=(j,b.id,"artefact","mobile","javelot"))
-        
+                            self.canevas.create_image(b.x,b.y,image=self.images[b.image],tags=(j,b.id,"artefact","mobile","javelot"))
+
+            # Barre de vie des bâtiments                            
+            for k in self.modele.joueurs[j].batiments.keys():    
+                for l in self.modele.joueurs[j].batiments[k].keys():
+                    i = self.modele.joueurs[j].batiments[k][l]
+                    if i in self.action.persochoisi:
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x+10,i.y+30,fill="black",tags=(j,k,"artefact","mobile"))
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 10, i.y +30  ,fill="green",tags=(j,k,"artefact","mobile"))
+                    else:
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x+10,i.y + 30,fill="black",tags=(j,k,"artefact","mobile"))
+                        self.canevas.create_rectangle(i.x-10,i.y+25,i.x + (i.health / i.maxHealth) * 10, i.y +30 ,fill="yellow",tags=(j,k,"artefact","mobile"))
+
         # ajuster les choses vivantes dependantes de la partie (mais pas des joueurs) 
         for j in self.modele.biotopes["daim"].keys():
             i=self.modele.biotopes["daim"][j]
